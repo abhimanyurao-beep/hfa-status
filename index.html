@@ -1,0 +1,309 @@
+<title>PMAY Extraction — State Progress</title>
+<style>
+  :root{
+    --paper:#f4f5f2; --card:#fbfcfa; --ink:#1c2321; --ink-soft:#545e5a; --line:#dfe2dc;
+    --accent:#2f4b7c; --done:#2f7a5b; --done-soft:#d3e6da; --pend:#9aa4a0; --pend-soft:#e4e7e2;
+    --pg:#2f4b7c; --pg-soft:#dbe3f0; --amber:#9a6b1f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:44px 24px 72px}
+  .num{font-variant-numeric:tabular-nums}
+  header{border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:22px}
+  .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:600;margin:0 0 8px}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:600;font-size:clamp(28px,4vw,40px);
+    letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance}
+  .sub{color:var(--ink-soft);font-size:15px;margin:0}
+  /* live status */
+  .live{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12.5px;color:var(--ink-soft)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--pend);flex:none}
+  .dot.on{background:var(--done);box-shadow:0 0 0 0 rgba(47,122,91,.5);animation:pulse 2.4s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,122,91,.45)}70%{box-shadow:0 0 0 7px rgba(47,122,91,0)}100%{box-shadow:0 0 0 0 rgba(47,122,91,0)}}
+  @media(prefers-reduced-motion:reduce){.dot.on{animation:none}}
+  .live b{color:var(--ink);font-weight:600}
+  .btn{font:inherit;font-size:12.5px;color:var(--accent);background:transparent;border:1px solid var(--line);
+    border-radius:20px;padding:3px 12px;cursor:pointer}
+  .btn:hover{border-color:var(--accent)}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  /* controls */
+  .controls{display:flex;gap:20px;flex-wrap:wrap;align-items:center;background:var(--card);
+    border:1px solid var(--line);border-radius:10px;padding:12px 18px;margin-bottom:24px}
+  .cgroup{display:flex;align-items:center;gap:9px}
+  .clabel{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg button{font:inherit;font-size:13px;padding:5px 12px;border:0;background:transparent;color:var(--ink-soft);cursor:pointer}
+  .seg button[aria-pressed=true]{background:var(--accent);color:#fff}
+  .seg button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  select.sel{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+  input[type=range]{accent-color:var(--accent);width:130px;vertical-align:middle}
+  .slidewrap{display:flex;align-items:center;gap:9px}
+  .slideval{font-size:13px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;min-width:34px}
+  /* kpis */
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:26px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;position:relative;overflow:hidden}
+  .kpi .cap{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 10px}
+  .kpi .big{font-family:Georgia,serif;font-size:34px;font-weight:600;letter-spacing:-.02em;line-height:1}
+  .kpi .of{color:var(--pend);font-size:14px;margin-left:4px}
+  .kpi .bar{height:6px;background:var(--pend-soft);border-radius:4px;margin-top:14px;overflow:hidden}
+  .kpi .fill{height:100%;border-radius:4px;background:var(--done);transition:width .3s ease}
+  .kpi .pct{position:absolute;top:18px;right:20px;font-size:13px;font-weight:600;color:var(--done)}
+  /* mirror checkup */
+  .checkup{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
+    border-left-width:4px;border-radius:10px;padding:13px 18px;margin-bottom:14px}
+  .checkup.up{border-left-color:var(--done)} .checkup.down{border-left-color:#b8402f}
+  .checkup.unknown{border-left-color:var(--pend)}
+  .ck-dot{width:11px;height:11px;border-radius:50%;flex:none;background:var(--pend)}
+  .checkup.up .ck-dot{background:var(--done);box-shadow:0 0 0 0 rgba(47,122,91,.5);animation:pulse 2.4s infinite}
+  .checkup.down .ck-dot{background:#b8402f}
+  .ck-main{font-size:14px;font-weight:600}
+  .ck-sub{font-size:12.5px;color:var(--ink-soft)}
+  .ck-t{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+  .ck-when{font-size:11.5px;color:var(--pend);white-space:nowrap;font-variant-numeric:tabular-nums}
+  /* storage legend */
+  .storage{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;background:var(--card);
+    border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin-bottom:8px}
+  .storage .item{display:flex;gap:10px;align-items:flex-start;max-width:420px}
+  .sw{width:12px;height:12px;border-radius:3px;margin-top:4px;flex:none}
+  .sw.local{background:var(--done)} .sw.pg{background:var(--pg)}
+  .storage .t{font-size:13px;color:var(--ink-soft)} .storage .t b{color:var(--ink);font-weight:600}
+  .pgnote{font-size:12.5px;color:var(--amber);margin:0 0 24px;padding-left:2px;min-height:1px}
+  .shead{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 12px;gap:12px;flex-wrap:wrap}
+  .shead h2{font-size:15px;letter-spacing:.04em;text-transform:uppercase;margin:0}
+  .shead .meta{font-size:13px;color:var(--ink-soft)}
+  .rows{display:flex;flex-direction:column;gap:3px;margin-bottom:36px}
+  .row{display:grid;grid-template-columns:26px 1.35fr 2.6fr auto auto;align-items:center;gap:14px;
+    padding:9px 14px;border-radius:8px;background:var(--card);border:1px solid var(--line)}
+  .row.done{border-color:var(--done-soft)}
+  .row.flash{animation:flash 1.2s ease}
+  @keyframes flash{0%{background:var(--done-soft)}100%{background:var(--card)}}
+  @media(prefers-reduced-motion:reduce){.row.flash{animation:none}}
+  .mark{font-size:15px;text-align:center}
+  .name{font-weight:550;font-size:14.5px}
+  .name .code{color:var(--pend);font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+  .track{height:20px;background:var(--pend-soft);border-radius:5px;overflow:hidden;min-width:40px}
+  .track .seg2{height:100%;border-radius:5px}
+  .done .seg2{background:var(--done)}
+  .pending .seg2{background:repeating-linear-gradient(45deg,var(--pend),var(--pend) 5px,#aeb6b2 5px,#aeb6b2 10px)}
+  .count{text-align:right;font-size:13.5px;font-variant-numeric:tabular-nums;min-width:86px}
+  .count .s1{color:var(--pend);font-size:11.5px;display:block}
+  .badge{font-size:10.5px;font-weight:600;letter-spacing:.02em;padding:2px 8px;border-radius:20px;
+    white-space:nowrap;text-align:center;min-width:74px}
+  .badge.local{background:var(--done-soft);color:var(--done)}
+  .badge.pg{background:var(--pg-soft);color:var(--pg)}
+  .badge.none{background:transparent;color:var(--pend)}
+  .divider{display:flex;align-items:center;gap:12px;margin:6px 0 18px}
+  .divider .lbl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap}
+  .divider .ln{flex:1;height:1px;background:var(--line)}
+  footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;color:var(--ink-soft)}
+  footer b{color:var(--ink);font-weight:600}
+  @media(max-width:640px){
+    .kpis{grid-template-columns:1fr}
+    .row{grid-template-columns:22px 1fr auto auto;gap:9px;padding:8px 10px}
+    .track{display:none} .count .s1{display:none}
+  }
+</style>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Bhuvan HFA · PMAY completed-houses extraction</p>
+    <h1>State collection progress</h1>
+    <p class="sub" id="sub"></p>
+    <div class="live">
+      <span class="dot" id="dot"></span>
+      <span id="livetxt">loading…</span>
+      <button class="btn" id="refresh" type="button">Refresh</button>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="cgroup"><span class="clabel">Show</span>
+      <span class="seg" id="filter">
+        <button data-v="all" aria-pressed="true" type="button">All</button>
+        <button data-v="collected" aria-pressed="false" type="button">Collected</button>
+        <button data-v="remaining" aria-pressed="false" type="button">Remaining</button>
+      </span>
+    </div>
+    <div class="cgroup"><span class="clabel">Sort</span>
+      <select class="sel" id="sort">
+        <option value="size">Size (status=1)</option>
+        <option value="banked">Banked</option>
+        <option value="name">Name A–Z</option>
+      </select>
+    </div>
+    <div class="cgroup"><span class="clabel">Completed rate</span>
+      <span class="slidewrap">
+        <input type="range" id="frac" min="55" max="75" step="1" value="65"
+               aria-label="Completed fraction of status=1">
+        <span class="slideval" id="fracval">65%</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><p class="cap">States collected</p><span class="pct" id="k1p"></span>
+      <div class="big num" id="k1"></div><div class="bar"><div class="fill" id="k1f"></div></div></div>
+    <div class="kpi"><p class="cap">Houses banked (Completed)</p><span class="pct" id="k2p"></span>
+      <div class="big num" id="k2"></div><div class="bar"><div class="fill" id="k2f"></div></div></div>
+    <div class="kpi"><p class="cap">status=1 measured</p><span class="pct" id="k3p"></span>
+      <div class="big num" id="k3"></div><div class="bar"><div class="fill" id="k3f"></div></div></div>
+  </div>
+
+  <div class="checkup unknown" id="checkup">
+    <span class="ck-dot"></span>
+    <div class="ck-t"><span class="ck-main" id="ck-main">Mirror checkup</span>
+      <span class="ck-sub" id="ck-sub"></span></div>
+    <span class="ck-when" id="ck-when"></span>
+  </div>
+
+  <div class="storage">
+    <div class="item"><span class="sw local"></span><span class="t">
+      <b>Local (this host)</b> — per-district <span class="num">.jsonl</span> under <span class="num">state_*/</span>
+      is the <b>source of truth</b>; merged to the national CSV/JSON. Everything collected lives here first.</span></div>
+    <div class="item"><span class="sw pg"></span><span class="t">
+      <b>Postgres mirror</b> — <span class="num">bhuvan_hfa.houses</span> on the 148 box, a
+      <b>rebuildable</b> upsert of the same JSONL (≤15 min fresh via the watchdog). Queryable; not the source of truth.</span></div>
+  </div>
+  <p class="pgnote" id="pgnote"></p>
+
+  <div class="shead">
+    <h2>Per-state ledger</h2>
+    <span class="meta">bar = scale (status=1, √-scaled) · badge = where each state lives</span>
+  </div>
+  <div class="rows" id="rows"></div>
+  <footer id="foot"></footer>
+</div>
+<script>
+  const EMBED = {"generated_at": "2026-07-03 17:30:10", "pgknown": false, "pg_status": {"state": "unknown", "detail": "no db.env on this host \u2014 mirror runs on the 148 box", "checked_at": "2026-07-03 17:30:10"}, "rows": [["23", "Madhya Pradesh", 654453, 706079, "Local"], ["15", "Mizoram", 31584, 37160, "Local"], ["13", "Nagaland", 29426, 30784, "Local"], ["6", "Haryana", 23454, 37877, "Local"], ["14", "Manipur", 22660, 47668, "Local"], ["5", "Uttarakhand", 18388, 24914, "Local"], ["34", "Puducherry", 9793, 15698, "Local"], ["2", "Himachal Pradesh", 9084, 11414, "Local"], ["12", "Arunachal Pradesh", 6377, 6768, "Local"], ["17", "Meghalaya", 2481, 3892, "Local"], ["37", "Ladakh", 825, 878, "Local"], ["35", "Andaman & Nicobar", 20, 22, "Local"], ["11", "Sikkim", 19, 47, "Local"], ["30", "Goa", 4, 4, "Local"], ["SEP", "", null, null, ""], ["28", "Andhra Pradesh", null, 1886845, ""], ["9", "Uttar Pradesh", null, 1514564, ""], ["19", "West Bengal", null, 535715, ""], ["33", "Tamil Nadu", null, 409296, ""], ["10", "Bihar", null, 271038, ""], ["27", "Maharashtra", null, 234065, ""], ["22", "Chhattisgarh", null, 214917, ""], ["29", "Karnataka", null, 205629, ""], ["20", "Jharkhand", null, 177255, ""], ["18", "Assam", null, 172393, ""], ["21", "Odisha", null, 159087, ""], ["24", "Gujarat", null, 150686, ""], ["32", "Kerala", null, 120864, ""], ["8", "Rajasthan", null, 110772, ""], ["16", "Tripura", null, 81184, ""], ["3", "Punjab", null, 76485, ""], ["1", "Jammu & Kashmir", null, 46755, ""]]};              // snapshot baked in at generation time
+  const fmt = n => Math.round(n).toLocaleString("en-IN");
+  let STATE = EMBED, FRAC = 0.65, FILTER = "all", SORT = "size";
+  let LIVE = false, lastFetch = 0, prevBanked = {};
+
+  const g = id => document.getElementById(id);
+
+  function computeRows(){
+    const R = STATE.rows.filter(r => r[0] !== "SEP");
+    const done = R.filter(r => r[2] !== null);
+    const pend = R.filter(r => r[2] === null);
+    const s1 = r => r[3], bk = r => r[2] || 0, nm = r => r[1];
+    const sorters = {
+      size:  (a,b) => s1(b) - s1(a),
+      banked:(a,b) => bk(b) - bk(a) || s1(b) - s1(a),
+      name:  (a,b) => nm(a).localeCompare(nm(b)),
+    };
+    done.sort(sorters[SORT]); pend.sort(SORT === "banked" ? sorters.size : sorters[SORT]);
+    return {done, pend, R};
+  }
+
+  function render(){
+    const {done, pend, R} = computeRows();
+    const maxS1 = Math.max(...R.map(r => r[3]));
+    const scale = v => Math.max(6, Math.sqrt(v / maxS1) * 100);
+
+    const nColl = done.length, nUniv = R.length;
+    const banked = done.reduce((s,r) => s + r[2], 0);
+    const s1Coll = done.reduce((s,r) => s + r[3], 0);
+    const s1Tot  = R.reduce((s,r) => s + r[3], 0);
+    const estAll = s1Tot * FRAC;
+    const estRem = pend.reduce((s,r) => s + r[3], 0) * FRAC;
+
+    // KPIs
+    const sp = nColl / nUniv * 100, hp = banked / estAll * 100, s1p = s1Coll / s1Tot * 100;
+    g("k1").innerHTML = `${nColl}<span class="of">/ ${nUniv}</span>`;
+    g("k1p").textContent = sp.toFixed(0) + "%"; g("k1f").style.width = sp + "%";
+    g("k2").innerHTML = `${Math.round(banked/1000)}k<span class="of">/ ~${(estAll/1e6).toFixed(2)}M</span>`;
+    g("k2p").textContent = "~" + hp.toFixed(0) + "%"; g("k2f").style.width = hp + "%";
+    g("k3").innerHTML = `${Math.round(s1Coll/1000)}k<span class="of">/ ${(s1Tot/1e6).toFixed(2)}M</span>`;
+    g("k3p").textContent = s1p.toFixed(0) + "%"; g("k3f").style.width = s1p + "%";
+
+    // rows
+    const rowHtml = r => {
+      const [code,name,bkv,s1v,st] = r, isDone = bkv !== null;
+      const primary = isDone ? fmt(bkv) : "~" + fmt(s1v * FRAC);
+      const badge = isDone
+        ? (st === "Local + PG" ? `<span class="badge pg">Local + PG</span>` : `<span class="badge local">Local</span>`)
+        : `<span class="badge none">—</span>`;
+      const flash = isDone && prevBanked[code] !== undefined && prevBanked[code] !== bkv ? " flash" : "";
+      return `<div class="row ${isDone?"done":"pending"}${flash}">
+        <div class="mark">${isDone?"✅":"⬜"}</div>
+        <div class="name">${name}<span class="code">${code}</span></div>
+        <div class="track"><div class="seg2" style="width:${scale(s1v).toFixed(1)}%"></div></div>
+        <div class="count">${primary}<span class="s1">${fmt(s1v)} reg.</span></div>
+        ${badge}</div>`;
+    };
+    const divider = `<div class="divider"><span class="lbl">Remaining — ${pend.length} states, ~${(estRem/1e6).toFixed(2)}M est.</span><span class="ln"></span></div>`;
+    let html = "";
+    if (FILTER === "all")       html = done.map(rowHtml).join("") + (pend.length?divider:"") + pend.map(rowHtml).join("");
+    else if (FILTER==="collected") html = done.map(rowHtml).join("");
+    else                        html = pend.map(rowHtml).join("");
+    g("rows").innerHTML = html || `<div class="divider"><span class="lbl">nothing to show</span><span class="ln"></span></div>`;
+
+    // footer + sub
+    g("sub").textContent = `${nColl} of ${nUniv} data-bearing states banked · ${fmt(banked)} completed houses on disk`;
+    const pgk = STATE.pgknown;
+    g("pgnote").textContent = pgk ? "" :
+      "Postgres mirror lives on the 148 box — its per-state contents aren't visible from this host; everything shown is Local (source of truth).";
+    g("foot").innerHTML =
+      `<b>Banked: ${fmt(banked)} Completed</b> across ${nColl} states — all on <b>Local</b> JSONL (source of truth)`
+      + (pgk ? `, mirrored to Postgres per <span class="num">pgload.state</span>.` : `; the Postgres mirror runs on the 148 box.`)
+      + `<br><b>Remaining: ~${fmt(estRem)} est.</b> at ${(FRAC*100).toFixed(0)}% completion — AP + UP hold ~55% of it. `
+      + `Regenerate: <span class="num">python3 scripts/build_states_md.py</span>.`;
+
+    prevBanked = {}; done.forEach(r => prevBanked[r[0]] = r[2]);
+    renderCheckup();
+  }
+
+  function renderCheckup(){
+    const s = STATE.pg_status || {state:"unknown", detail:"no health data in feed", checked_at:"—"};
+    const el = g("checkup");
+    el.className = "checkup " + s.state;
+    const titles = {up:"Postgres mirror: UP", down:"Postgres mirror: DOWN", unknown:"Postgres mirror: unknown"};
+    g("ck-main").textContent = titles[s.state] || "Mirror checkup";
+    let sub = s.detail || "";
+    if (s.state === "up" && s.ms != null) sub += ` · ${s.ms} ms`;
+    g("ck-sub").textContent = sub;
+    g("ck-when").textContent = s.checked_at && s.checked_at !== "—" ? "checked " + s.checked_at : "";
+  }
+
+  function setLiveText(){
+    const gen = STATE.generated_at;
+    if (LIVE){
+      const secs = Math.round((Date.now() - lastFetch)/1000);
+      const ago = secs < 60 ? `${secs}s` : `${Math.round(secs/60)}m`;
+      g("dot").className = "dot on";
+      g("livetxt").innerHTML = `<b>Live</b> · updated ${ago} ago · generated ${gen}`;
+    } else {
+      g("dot").className = "dot";
+      g("livetxt").innerHTML = `Snapshot · generated ${gen} <span style="color:var(--amber)">(sandboxed — serve the file locally for live updates)</span>`;
+    }
+  }
+
+  async function poll(){
+    try{
+      const res = await fetch("states_data.json", {cache:"no-store"});
+      if(!res.ok) throw 0;
+      const data = await res.json();
+      const changed = JSON.stringify(data.rows) !== JSON.stringify(STATE.rows);
+      STATE = data; LIVE = true; lastFetch = Date.now();
+      if (changed) render();
+      setLiveText();
+    }catch(e){
+      LIVE = false; setLiveText();
+    }
+  }
+
+  // wire controls
+  g("filter").addEventListener("click", e => {
+    const b = e.target.closest("button[data-v]"); if(!b) return;
+    FILTER = b.dataset.v;
+    [...g("filter").children].forEach(x => x.setAttribute("aria-pressed", x === b));
+    render();
+  });
+  g("sort").addEventListener("change", e => { SORT = e.target.value; render(); });
+  g("frac").addEventListener("input", e => { FRAC = +e.target.value/100; g("fracval").textContent = e.target.value + "%"; render(); });
+  g("refresh").addEventListener("click", poll);
+
+  render(); poll();
+  setInterval(poll, 20000);     // re-pull the feed every 20s (no-op in the sandbox)
+  setInterval(setLiveText, 1000);
+</script>
