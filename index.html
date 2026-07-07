@@ -85,6 +85,8 @@
   .track{height:20px;background:var(--pend-soft);border-radius:5px;overflow:hidden;min-width:40px}
   .track .seg2{height:100%;border-radius:5px}
   .done .seg2{background:var(--done)}
+  .row.progress{border-color:#e8d9b4}
+  .progress .seg2{background:repeating-linear-gradient(45deg,var(--amber),var(--amber) 5px,#c69a4a 5px,#c69a4a 10px)}
   .pending .seg2{background:repeating-linear-gradient(45deg,var(--pend),var(--pend) 5px,#aeb6b2 5px,#aeb6b2 10px)}
   .count{text-align:right;font-size:13.5px;font-variant-numeric:tabular-nums;min-width:86px}
   .count .s1{color:var(--pend);font-size:11.5px;display:block}
@@ -92,6 +94,7 @@
     white-space:nowrap;text-align:center;min-width:74px}
   .badge.local{background:var(--done-soft);color:var(--done)}
   .badge.pg{background:var(--pg-soft);color:var(--pg)}
+  .badge.prog{background:#f3e6c8;color:var(--amber)}
   .badge.none{background:transparent;color:var(--pend)}
   .divider{display:flex;align-items:center;gap:12px;margin:6px 0 18px}
   .divider .lbl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap}
@@ -198,7 +201,7 @@
   <footer id="foot"></footer>
 </div>
 <script>
-  const EMBED = {"generated_at": "2026-07-07 19:30:56", "pgknown": true, "pg_status": {"state": "up", "rows": 3017502, "ms": 198, "detail": "3,017,502 rows mirrored", "checked_at": "2026-07-07 19:30:56"}, "in_progress": {"code": "9", "name": "Uttar Pradesh", "banked": 1295087, "status1": 1514564, "districts_done": 54, "age_min": 0.0}, "rows": [["9", "Uttar Pradesh", 1295087, 1514564, "Local + PG"], ["28", "Andhra Pradesh", 790169, 1886845, "Local + PG"], ["23", "Madhya Pradesh", 654453, 706079, "Local + PG"], ["16", "Tripura", 76646, 81184, "Local + PG"], ["3", "Punjab", 47605, 76485, "Local + PG"], ["15", "Mizoram", 31584, 37160, "Local + PG"], ["13", "Nagaland", 29426, 30784, "Local + PG"], ["6", "Haryana", 23454, 37877, "Local + PG"], ["14", "Manipur", 22660, 47668, "Local + PG"], ["5", "Uttarakhand", 18388, 24914, "Local + PG"], ["34", "Puducherry", 9793, 15698, "Local + PG"], ["2", "Himachal Pradesh", 9084, 11414, "Local + PG"], ["12", "Arunachal Pradesh", 6377, 6768, "Local + PG"], ["17", "Meghalaya", 2481, 3892, "Local + PG"], ["37", "Ladakh", 825, 878, "Local + PG"], ["35", "Andaman & Nicobar", 20, 22, "Local + PG"], ["11", "Sikkim", 19, 47, "Local + PG"], ["30", "Goa", 4, 4, "Local + PG"], ["SEP", "", null, null, ""], ["19", "West Bengal", null, 535715, ""], ["33", "Tamil Nadu", null, 409296, ""], ["10", "Bihar", null, 271038, ""], ["27", "Maharashtra", null, 234065, ""], ["22", "Chhattisgarh", null, 214917, ""], ["29", "Karnataka", null, 205629, ""], ["20", "Jharkhand", null, 177255, ""], ["18", "Assam", null, 172393, ""], ["21", "Odisha", null, 159087, ""], ["24", "Gujarat", null, 150686, ""], ["32", "Kerala", null, 120864, ""], ["8", "Rajasthan", null, 110772, ""], ["1", "Jammu & Kashmir", null, 46755, ""]]};              // snapshot baked in at generation time
+  const EMBED = {"generated_at": "2026-07-07 19:38:32", "pgknown": true, "pg_status": {"state": "up", "rows": 3017502, "ms": 285, "detail": "3,017,502 rows mirrored", "checked_at": "2026-07-07 19:38:31"}, "in_progress": {"code": "9", "name": "Uttar Pradesh", "banked": 1305002, "status1": 1514564, "districts_done": 55, "age_min": 0.0}, "rows": [["28", "Andhra Pradesh", 790169, 1886845, "Local + PG", "done"], ["23", "Madhya Pradesh", 654453, 706079, "Local + PG", "done"], ["16", "Tripura", 76646, 81184, "Local + PG", "done"], ["3", "Punjab", 47605, 76485, "Local + PG", "done"], ["15", "Mizoram", 31584, 37160, "Local + PG", "done"], ["13", "Nagaland", 29426, 30784, "Local + PG", "done"], ["6", "Haryana", 23454, 37877, "Local + PG", "done"], ["14", "Manipur", 22660, 47668, "Local + PG", "done"], ["5", "Uttarakhand", 18388, 24914, "Local + PG", "done"], ["34", "Puducherry", 9793, 15698, "Local + PG", "done"], ["2", "Himachal Pradesh", 9084, 11414, "Local + PG", "done"], ["12", "Arunachal Pradesh", 6377, 6768, "Local + PG", "done"], ["17", "Meghalaya", 2481, 3892, "Local + PG", "done"], ["37", "Ladakh", 825, 878, "Local + PG", "done"], ["35", "Andaman & Nicobar", 20, 22, "Local + PG", "done"], ["11", "Sikkim", 19, 47, "Local + PG", "done"], ["30", "Goa", 4, 4, "Local + PG", "done"], ["9", "Uttar Pradesh", 1305002, 1514564, "Local + PG", "progress"], ["SEP", "", null, null, "", "sep"], ["19", "West Bengal", null, 535715, "", "pending"], ["33", "Tamil Nadu", null, 409296, "", "pending"], ["10", "Bihar", null, 271038, "", "pending"], ["27", "Maharashtra", null, 234065, "", "pending"], ["22", "Chhattisgarh", null, 214917, "", "pending"], ["29", "Karnataka", null, 205629, "", "pending"], ["20", "Jharkhand", null, 177255, "", "pending"], ["18", "Assam", null, 172393, "", "pending"], ["21", "Odisha", null, 159087, "", "pending"], ["24", "Gujarat", null, 150686, "", "pending"], ["32", "Kerala", null, 120864, "", "pending"], ["8", "Rajasthan", null, 110772, "", "pending"], ["1", "Jammu & Kashmir", null, 46755, "", "pending"]]};              // snapshot baked in at generation time
   const fmt = n => Math.round(n).toLocaleString("en-IN");
   const M = n => (n/1e6).toFixed(2) + "M";     // headline totals in millions
   let STATE = EMBED, FRAC = 0.65, FILTER = "all", SORT = "size";
@@ -208,8 +211,10 @@
 
   function computeRows(){
     const R = STATE.rows.filter(r => r[0] !== "SEP");
-    const done = R.filter(r => r[2] !== null);
-    const pend = R.filter(r => r[2] === null);
+    const st = r => r[5] || (r[2] !== null ? "done" : "pending");   // tolerate pre-marker feeds
+    const done = R.filter(r => st(r) === "done");
+    const prog = R.filter(r => st(r) === "progress");
+    const pend = R.filter(r => st(r) === "pending");
     const s1 = r => r[3], bk = r => r[2] || 0, nm = r => r[1];
     const sorters = {
       size:  (a,b) => s1(b) - s1(a),
@@ -217,11 +222,11 @@
       name:  (a,b) => nm(a).localeCompare(nm(b)),
     };
     done.sort(sorters[SORT]); pend.sort(SORT === "banked" ? sorters.size : sorters[SORT]);
-    return {done, pend, R};
+    return {done, prog, pend, R};
   }
 
   function render(){
-    const {done, pend, R} = computeRows();
+    const {done, prog, pend, R} = computeRows();
     const maxS1 = Math.max(...R.map(r => r[3]));
     const scale = v => Math.max(6, Math.sqrt(v / maxS1) * 100);
 
@@ -243,14 +248,19 @@
 
     // rows
     const rowHtml = r => {
-      const [code,name,bkv,s1v,st] = r, isDone = bkv !== null;
-      const primary = isDone ? fmt(bkv) : "~" + fmt(s1v * FRAC);
-      const badge = isDone
-        ? (st === "Local + PG" ? `<span class="badge pg">Local + PG</span>` : `<span class="badge local">Local</span>`)
-        : `<span class="badge none">—</span>`;
-      const flash = isDone && prevBanked[code] !== undefined && prevBanked[code] !== bkv ? " flash" : "";
-      return `<div class="row ${isDone?"done":"pending"}${flash}">
-        <div class="mark">${isDone?"✅":"⬜"}</div>
+      const [code,name,bkv,s1v,st,status] = r;
+      const state = status || (bkv !== null ? "done" : "pending");
+      const hasCount = state === "done" || state === "progress";
+      const mark = state === "done" ? "✅" : state === "progress" ? "⏳" : "⬜";
+      const primary = hasCount ? fmt(bkv) : "~" + fmt(s1v * FRAC);
+      const badge = state === "progress"
+        ? `<span class="badge prog">In progress</span>`
+        : state === "done"
+          ? (st === "Local + PG" ? `<span class="badge pg">Local + PG</span>` : `<span class="badge local">Local</span>`)
+          : `<span class="badge none">—</span>`;
+      const flash = hasCount && prevBanked[code] !== undefined && prevBanked[code] !== bkv ? " flash" : "";
+      return `<div class="row ${state}${flash}">
+        <div class="mark">${mark}</div>
         <div class="name">${name}<span class="code">${code}</span></div>
         <div class="track"><div class="seg2" style="width:${scale(s1v).toFixed(1)}%"></div></div>
         <div class="count">${primary}<span class="s1">${fmt(s1v)} reg.</span></div>
@@ -263,7 +273,7 @@
     if (inRing){ renderRing(); }
     else {
       let html = "";
-      if (FILTER === "all")       html = done.map(rowHtml).join("") + (pend.length?divider:"") + pend.map(rowHtml).join("");
+      if (FILTER === "all")       html = done.map(rowHtml).join("") + prog.map(rowHtml).join("") + (pend.length?divider:"") + pend.map(rowHtml).join("");
       else if (FILTER==="collected") html = done.map(rowHtml).join("");
       else                        html = pend.map(rowHtml).join("");
       g("rows").innerHTML = html || `<div class="divider"><span class="lbl">nothing to show</span><span class="ln"></span></div>`;
@@ -280,7 +290,7 @@
       + `<br><b>Remaining: ~${M(estRem)} est.</b> at ${(FRAC*100).toFixed(0)}% completion — AP + UP hold ~55% of it. `
       + `Regenerate: <span class="num">python3 scripts/build_states_md.py</span>.`;
 
-    prevBanked = {}; done.forEach(r => prevBanked[r[0]] = r[2]);
+    prevBanked = {}; done.concat(prog).forEach(r => prevBanked[r[0]] = r[2]);
     renderCheckup();
   }
 
