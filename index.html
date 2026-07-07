@@ -96,6 +96,28 @@
   .divider{display:flex;align-items:center;gap:12px;margin:6px 0 18px}
   .divider .lbl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap}
   .divider .ln{flex:1;height:1px;background:var(--line)}
+  /* in-progress ring */
+  .ring-wrap{margin-bottom:36px}
+  .ring-idle{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:28px 22px;color:var(--ink-soft);font-size:14px;text-align:center}
+  .ring-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 24px}
+  .ring-head{font-size:14.5px;color:var(--ink-soft);margin-bottom:18px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .ring-head b{color:var(--ink);font-weight:600;font-size:16px}
+  .ring-code{color:var(--pend);font-size:12px;font-variant-numeric:tabular-nums}
+  .ring-live-dot{width:9px;height:9px;border-radius:50%;background:var(--done);flex:none;
+    box-shadow:0 0 0 0 rgba(47,122,91,.5);animation:pulse 2.4s infinite}
+  .ring-body{display:flex;gap:34px;align-items:center;flex-wrap:wrap}
+  svg.ring{width:150px;height:150px;flex:none}
+  .ring-track{fill:none;stroke:var(--pend-soft);stroke-width:12}
+  .ring-prog{fill:none;stroke:var(--done);stroke-width:12;stroke-linecap:round;
+    transform:rotate(-90deg);transform-origin:60px 60px;transition:stroke-dashoffset .6s ease}
+  .ring-pct{fill:var(--ink);font:600 26px Georgia,serif;text-anchor:middle;font-variant-numeric:tabular-nums}
+  .ring-sub{fill:var(--pend);font-size:11px;text-anchor:middle;text-transform:uppercase;letter-spacing:.08em}
+  .ring-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px 30px;flex:1;min-width:230px}
+  .rs{display:flex;flex-direction:column;gap:2px}
+  .rs-n{font-size:22px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+  .rs-l{font-size:12px;color:var(--ink-soft)}
+  @media(max-width:640px){.ring-body{gap:20px}.ring-stats{grid-template-columns:1fr}}
   footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;color:var(--ink-soft)}
   footer b{color:var(--ink);font-weight:600}
   @media(max-width:640px){
@@ -122,6 +144,7 @@
         <button data-v="all" aria-pressed="true" type="button">All</button>
         <button data-v="collected" aria-pressed="false" type="button">Collected</button>
         <button data-v="remaining" aria-pressed="false" type="button">Remaining</button>
+        <button data-v="inprogress" aria-pressed="false" type="button">In progress</button>
       </span>
     </div>
     <div class="cgroup"><span class="clabel">Sort</span>
@@ -166,16 +189,18 @@
   </div>
   <p class="pgnote" id="pgnote"></p>
 
-  <div class="shead">
+  <div class="shead" id="shead">
     <h2>Per-state ledger</h2>
     <span class="meta">bar = scale (status=1, √-scaled) · badge = where each state lives</span>
   </div>
+  <div class="ring-wrap" id="ringwrap" hidden></div>
   <div class="rows" id="rows"></div>
   <footer id="foot"></footer>
 </div>
 <script>
-  const EMBED = {"generated_at": "2026-07-07 16:51:19", "pgknown": true, "pg_status": {"state": "up", "rows": 2864391, "ms": 421, "detail": "2,864,391 rows mirrored", "checked_at": "2026-07-07 16:51:19"}, "rows": [["9", "Uttar Pradesh", 1142067, 1514564, "Local + PG"], ["28", "Andhra Pradesh", 790169, 1886845, "Local + PG"], ["23", "Madhya Pradesh", 654453, 706079, "Local + PG"], ["16", "Tripura", 76646, 81184, "Local + PG"], ["3", "Punjab", 47605, 76485, "Local + PG"], ["15", "Mizoram", 31584, 37160, "Local + PG"], ["13", "Nagaland", 29426, 30784, "Local + PG"], ["6", "Haryana", 23454, 37877, "Local + PG"], ["14", "Manipur", 22660, 47668, "Local + PG"], ["5", "Uttarakhand", 18388, 24914, "Local + PG"], ["34", "Puducherry", 9793, 15698, "Local + PG"], ["2", "Himachal Pradesh", 9084, 11414, "Local + PG"], ["12", "Arunachal Pradesh", 6377, 6768, "Local + PG"], ["17", "Meghalaya", 2481, 3892, "Local + PG"], ["37", "Ladakh", 825, 878, "Local + PG"], ["35", "Andaman & Nicobar", 20, 22, "Local + PG"], ["11", "Sikkim", 19, 47, "Local + PG"], ["30", "Goa", 4, 4, "Local + PG"], ["SEP", "", null, null, ""], ["19", "West Bengal", null, 535715, ""], ["33", "Tamil Nadu", null, 409296, ""], ["10", "Bihar", null, 271038, ""], ["27", "Maharashtra", null, 234065, ""], ["22", "Chhattisgarh", null, 214917, ""], ["29", "Karnataka", null, 205629, ""], ["20", "Jharkhand", null, 177255, ""], ["18", "Assam", null, 172393, ""], ["21", "Odisha", null, 159087, ""], ["24", "Gujarat", null, 150686, ""], ["32", "Kerala", null, 120864, ""], ["8", "Rajasthan", null, 110772, ""], ["1", "Jammu & Kashmir", null, 46755, ""]]};              // snapshot baked in at generation time
+  const EMBED = {"generated_at": "2026-07-07 17:02:21", "pgknown": true, "pg_status": {"state": "up", "rows": 2878423, "ms": 391, "detail": "2,878,423 rows mirrored", "checked_at": "2026-07-07 17:02:21"}, "in_progress": {"code": "9", "name": "Uttar Pradesh", "banked": 1155593, "status1": 1514564, "districts_done": 44, "age_min": 0.0}, "rows": [["9", "Uttar Pradesh", 1155593, 1514564, "Local + PG"], ["28", "Andhra Pradesh", 790169, 1886845, "Local + PG"], ["23", "Madhya Pradesh", 654453, 706079, "Local + PG"], ["16", "Tripura", 76646, 81184, "Local + PG"], ["3", "Punjab", 47605, 76485, "Local + PG"], ["15", "Mizoram", 31584, 37160, "Local + PG"], ["13", "Nagaland", 29426, 30784, "Local + PG"], ["6", "Haryana", 23454, 37877, "Local + PG"], ["14", "Manipur", 22660, 47668, "Local + PG"], ["5", "Uttarakhand", 18388, 24914, "Local + PG"], ["34", "Puducherry", 9793, 15698, "Local + PG"], ["2", "Himachal Pradesh", 9084, 11414, "Local + PG"], ["12", "Arunachal Pradesh", 6377, 6768, "Local + PG"], ["17", "Meghalaya", 2481, 3892, "Local + PG"], ["37", "Ladakh", 825, 878, "Local + PG"], ["35", "Andaman & Nicobar", 20, 22, "Local + PG"], ["11", "Sikkim", 19, 47, "Local + PG"], ["30", "Goa", 4, 4, "Local + PG"], ["SEP", "", null, null, ""], ["19", "West Bengal", null, 535715, ""], ["33", "Tamil Nadu", null, 409296, ""], ["10", "Bihar", null, 271038, ""], ["27", "Maharashtra", null, 234065, ""], ["22", "Chhattisgarh", null, 214917, ""], ["29", "Karnataka", null, 205629, ""], ["20", "Jharkhand", null, 177255, ""], ["18", "Assam", null, 172393, ""], ["21", "Odisha", null, 159087, ""], ["24", "Gujarat", null, 150686, ""], ["32", "Kerala", null, 120864, ""], ["8", "Rajasthan", null, 110772, ""], ["1", "Jammu & Kashmir", null, 46755, ""]]};              // snapshot baked in at generation time
   const fmt = n => Math.round(n).toLocaleString("en-IN");
+  const M = n => (n/1e6).toFixed(2) + "M";     // headline totals in millions
   let STATE = EMBED, FRAC = 0.65, FILTER = "all", SORT = "size";
   let LIVE = false, lastFetch = 0, prevBanked = {};
 
@@ -211,9 +236,9 @@
     const sp = nColl / nUniv * 100, hp = banked / estAll * 100, s1p = s1Coll / s1Tot * 100;
     g("k1").innerHTML = `${nColl}<span class="of">/ ${nUniv}</span>`;
     g("k1p").textContent = sp.toFixed(0) + "%"; g("k1f").style.width = sp + "%";
-    g("k2").innerHTML = `${Math.round(banked/1000)}k<span class="of">/ ~${(estAll/1e6).toFixed(2)}M</span>`;
+    g("k2").innerHTML = `${M(banked)}<span class="of">/ ~${M(estAll)}</span>`;
     g("k2p").textContent = "~" + hp.toFixed(0) + "%"; g("k2f").style.width = hp + "%";
-    g("k3").innerHTML = `${Math.round(s1Coll/1000)}k<span class="of">/ ${(s1Tot/1e6).toFixed(2)}M</span>`;
+    g("k3").innerHTML = `${M(s1Coll)}<span class="of">/ ${M(s1Tot)}</span>`;
     g("k3p").textContent = s1p.toFixed(0) + "%"; g("k3f").style.width = s1p + "%";
 
     // rows
@@ -232,25 +257,62 @@
         ${badge}</div>`;
     };
     const divider = `<div class="divider"><span class="lbl">Remaining — ${pend.length} states, ~${(estRem/1e6).toFixed(2)}M est.</span><span class="ln"></span></div>`;
-    let html = "";
-    if (FILTER === "all")       html = done.map(rowHtml).join("") + (pend.length?divider:"") + pend.map(rowHtml).join("");
-    else if (FILTER==="collected") html = done.map(rowHtml).join("");
-    else                        html = pend.map(rowHtml).join("");
-    g("rows").innerHTML = html || `<div class="divider"><span class="lbl">nothing to show</span><span class="ln"></span></div>`;
+    // in-progress tab shows the live-state ring instead of the ledger rows
+    const inRing = FILTER === "inprogress";
+    g("shead").hidden = inRing; g("rows").hidden = inRing; g("ringwrap").hidden = !inRing;
+    if (inRing){ renderRing(); }
+    else {
+      let html = "";
+      if (FILTER === "all")       html = done.map(rowHtml).join("") + (pend.length?divider:"") + pend.map(rowHtml).join("");
+      else if (FILTER==="collected") html = done.map(rowHtml).join("");
+      else                        html = pend.map(rowHtml).join("");
+      g("rows").innerHTML = html || `<div class="divider"><span class="lbl">nothing to show</span><span class="ln"></span></div>`;
+    }
 
     // footer + sub
-    g("sub").textContent = `${nColl} of ${nUniv} data-bearing states banked · ${fmt(banked)} completed houses on disk`;
+    g("sub").textContent = `${nColl} of ${nUniv} data-bearing states banked · ${M(banked)} completed houses on disk`;
     const pgk = STATE.pgknown;
     g("pgnote").textContent = pgk ? "" :
       "Postgres mirror lives on the 148 box — its per-state contents aren't visible from this host; everything shown is Local (source of truth).";
     g("foot").innerHTML =
-      `<b>Banked: ${fmt(banked)} Completed</b> across ${nColl} states — all on <b>Local</b> JSONL (source of truth)`
+      `<b>Banked: ${M(banked)} Completed</b> across ${nColl} states — all on <b>Local</b> JSONL (source of truth)`
       + (pgk ? `, mirrored to Postgres per <span class="num">pgload.state</span>.` : `; the Postgres mirror runs on the 148 box.`)
-      + `<br><b>Remaining: ~${fmt(estRem)} est.</b> at ${(FRAC*100).toFixed(0)}% completion — AP + UP hold ~55% of it. `
+      + `<br><b>Remaining: ~${M(estRem)} est.</b> at ${(FRAC*100).toFixed(0)}% completion — AP + UP hold ~55% of it. `
       + `Regenerate: <span class="num">python3 scripts/build_states_md.py</span>.`;
 
     prevBanked = {}; done.forEach(r => prevBanked[r[0]] = r[2]);
     renderCheckup();
+  }
+
+  function renderRing(){
+    const ip = STATE.in_progress, w = g("ringwrap");
+    if (!ip){
+      w.innerHTML = `<div class="ring-idle">No state is being extracted right now — the campaign is idle or between states. The live state and its progress ring appear here while a district runner is writing.</div>`;
+      return;
+    }
+    const done = ip.banked, target = ip.status1 * FRAC;          // FRAC = the rate slider
+    const pct = target ? Math.min(100, done/target*100) : 0;
+    const C = 2 * Math.PI * 52, off = C * (1 - pct/100);         // r=52 ring geometry
+    w.innerHTML = `
+      <div class="ring-card">
+        <div class="ring-head"><span class="ring-live-dot"></span> Currently extracting
+          <b>${ip.name}</b> <span class="ring-code">state ${ip.code} · updated ${ip.age_min}m ago</span></div>
+        <div class="ring-body">
+          <svg class="ring" viewBox="0 0 120 120" role="img" aria-label="${pct.toFixed(0)}% of estimated completed houses collected">
+            <circle class="ring-track" cx="60" cy="60" r="52"></circle>
+            <circle class="ring-prog" cx="60" cy="60" r="52"
+              style="stroke-dasharray:${C.toFixed(1)};stroke-dashoffset:${off.toFixed(1)}"></circle>
+            <text class="ring-pct" x="60" y="58">${pct.toFixed(0)}%</text>
+            <text class="ring-sub" x="60" y="76">of est.</text>
+          </svg>
+          <div class="ring-stats">
+            <div class="rs"><span class="rs-n num">${M(done)}</span><span class="rs-l">houses banked so far</span></div>
+            <div class="rs"><span class="rs-n num">${M(target)}</span><span class="rs-l">est. completed (status=1 × ${(FRAC*100).toFixed(0)}%)</span></div>
+            <div class="rs"><span class="rs-n num">${ip.districts_done}</span><span class="rs-l">districts collected</span></div>
+            <div class="rs"><span class="rs-n num">${fmt(ip.status1)}</span><span class="rs-l">registered (status=1)</span></div>
+          </div>
+        </div>
+      </div>`;
   }
 
   function renderCheckup(){
@@ -283,7 +345,8 @@
       const res = await fetch("states_data.json", {cache:"no-store"});
       if(!res.ok) throw 0;
       const data = await res.json();
-      const changed = JSON.stringify(data.rows) !== JSON.stringify(STATE.rows);
+      const changed = JSON.stringify(data.rows) !== JSON.stringify(STATE.rows)
+                   || JSON.stringify(data.in_progress) !== JSON.stringify(STATE.in_progress);
       STATE = data; LIVE = true; lastFetch = Date.now();
       if (changed) render();
       setLiveText();
