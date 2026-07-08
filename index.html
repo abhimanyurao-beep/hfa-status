@@ -1,9 +1,10 @@
+<meta charset="utf-8">
 <title>PMAY Extraction — State Progress</title>
 <style>
   :root{
     --paper:#f4f5f2; --card:#fbfcfa; --ink:#1c2321; --ink-soft:#545e5a; --line:#dfe2dc;
     --accent:#2f4b7c; --done:#2f7a5b; --done-soft:#d3e6da; --pend:#9aa4a0; --pend-soft:#e4e7e2;
-    --pg:#2f4b7c; --pg-soft:#dbe3f0; --amber:#9a6b1f;
+    --pg:#2f4b7c; --pg-soft:#dbe3f0; --amber:#9a6b1f; --red:#b8402f; --red-soft:#f0d9d4;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);
@@ -19,29 +20,37 @@
   /* live status */
   .live{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12.5px;color:var(--ink-soft)}
   .dot{width:8px;height:8px;border-radius:50%;background:var(--pend);flex:none}
-  .dot.on{background:var(--done);box-shadow:0 0 0 0 rgba(47,122,91,.5);animation:pulse 2.4s infinite}
+  .dot.fresh{background:var(--done);box-shadow:0 0 0 0 rgba(47,122,91,.5);animation:pulse 2.4s infinite}
+  .dot.warn{background:var(--amber)} .dot.stale{background:var(--red)}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,122,91,.45)}70%{box-shadow:0 0 0 7px rgba(47,122,91,0)}100%{box-shadow:0 0 0 0 rgba(47,122,91,0)}}
-  @media(prefers-reduced-motion:reduce){.dot.on{animation:none}}
+  @media(prefers-reduced-motion:reduce){.dot.fresh{animation:none}}
   .live b{color:var(--ink);font-weight:600}
   .btn{font:inherit;font-size:12.5px;color:var(--accent);background:transparent;border:1px solid var(--line);
     border-radius:20px;padding:3px 12px;cursor:pointer}
   .btn:hover{border-color:var(--accent)}
   .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  /* stale banner */
+  .stalebar{display:none;align-items:center;gap:10px;background:var(--red-soft);color:var(--red);
+    border:1px solid #e3b6ac;border-radius:10px;padding:11px 16px;margin-bottom:18px;font-size:13.5px;font-weight:500}
+  .stalebar.show{display:flex}
   /* controls */
   .controls{display:flex;gap:20px;flex-wrap:wrap;align-items:center;background:var(--card);
     border:1px solid var(--line);border-radius:10px;padding:12px 18px;margin-bottom:24px}
   .cgroup{display:flex;align-items:center;gap:9px}
   .clabel{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
-  .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
   .seg button{font:inherit;font-size:13px;padding:5px 12px;border:0;background:transparent;color:var(--ink-soft);cursor:pointer}
   .seg button[aria-pressed=true]{background:var(--accent);color:#fff}
   .seg button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
   select.sel{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
   input[type=range]{accent-color:var(--accent);width:130px;vertical-align:middle}
+  input.search{font:inherit;font-size:13px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;
+    background:var(--card);color:var(--ink);width:150px}
+  input.search:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   .slidewrap{display:flex;align-items:center;gap:9px}
   .slideval{font-size:13px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;min-width:34px}
   /* kpis */
-  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:26px}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
   .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;position:relative;overflow:hidden}
   .kpi .cap{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 10px}
   .kpi .big{font-family:Georgia,serif;font-size:34px;font-weight:600;letter-spacing:-.02em;line-height:1}
@@ -49,14 +58,37 @@
   .kpi .bar{height:6px;background:var(--pend-soft);border-radius:4px;margin-top:14px;overflow:hidden}
   .kpi .fill{height:100%;border-radius:4px;background:var(--done);transition:width .3s ease}
   .kpi .pct{position:absolute;top:18px;right:20px;font-size:13px;font-weight:600;color:var(--done)}
-  /* mirror checkup */
-  .checkup{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
-    border-left-width:4px;border-radius:10px;padding:13px 18px;margin-bottom:14px}
-  .checkup.up{border-left-color:var(--done)} .checkup.down{border-left-color:#b8402f}
+  /* trend card */
+  .trend{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px 16px;margin-bottom:20px}
+  .trend-top{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .trend-top h2{font-size:14px;letter-spacing:.04em;text-transform:uppercase;margin:0;color:var(--ink-soft)}
+  .rate{font-size:13.5px;color:var(--ink-soft)} .rate b{color:var(--accent);font-weight:600}
+  .chart{margin:6px 0 4px} .spark{width:100%;height:140px;display:block}
+  .spark .area{fill:rgba(47,122,91,.12)} .spark .line{fill:none;stroke:var(--done);stroke-width:2}
+  .spark .head{fill:var(--done);stroke:#fff;stroke-width:1.5}
+  .spark .ms-l{stroke:var(--line);stroke-width:1;stroke-dasharray:2 3}
+  .spark .ms-t{fill:var(--pend);font-size:9px;text-anchor:end}
+  .chart-empty{color:var(--pend);font-size:13px;padding:38px 0;text-align:center}
+  .eta{font-size:12.5px;color:var(--ink-soft);margin-top:2px} .eta b{color:var(--ink);font-weight:600}
+  /* funnel */
+  .funnel{display:flex;flex-direction:column;gap:6px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .fn{display:grid;grid-template-columns:130px 1fr auto;align-items:center;gap:12px}
+  .fn-l{font-size:12px;color:var(--ink-soft)} .fn-track{height:14px;background:var(--pend-soft);border-radius:4px;overflow:hidden}
+  .fn-fill{height:100%;border-radius:4px} .fn-fill.reg{background:var(--pg-soft)} .fn-fill.est{background:var(--done-soft)} .fn-fill.bank{background:var(--done)}
+  .fn-n{font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;min-width:52px;text-align:right}
+  /* health row: pg + errors */
+  .healthrow{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+  @media(max-width:640px){.healthrow{grid-template-columns:1fr}}
+  .checkup,.errcard{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
+    border-left-width:4px;border-radius:10px;padding:13px 18px}
+  .checkup.up{border-left-color:var(--done)} .checkup.down{border-left-color:var(--red)}
   .checkup.unknown{border-left-color:var(--pend)}
   .ck-dot{width:11px;height:11px;border-radius:50%;flex:none;background:var(--pend)}
   .checkup.up .ck-dot{background:var(--done);box-shadow:0 0 0 0 rgba(47,122,91,.5);animation:pulse 2.4s infinite}
-  .checkup.down .ck-dot{background:#b8402f}
+  .checkup.down .ck-dot{background:var(--red)}
+  .errcard.ok{border-left-color:var(--done)} .errcard.warn{border-left-color:var(--amber)}
+  .err-dot{width:11px;height:11px;border-radius:50%;flex:none;background:var(--done)}
+  .errcard.warn .err-dot{background:var(--amber)}
   .ck-main{font-size:14px;font-weight:600}
   .ck-sub{font-size:12.5px;color:var(--ink-soft)}
   .ck-t{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
@@ -74,7 +106,8 @@
   .shead .meta{font-size:13px;color:var(--ink-soft)}
   .rows{display:flex;flex-direction:column;gap:3px;margin-bottom:36px}
   .row{display:grid;grid-template-columns:26px 1.35fr 2.6fr auto auto;align-items:center;gap:14px;
-    padding:9px 14px;border-radius:8px;background:var(--card);border:1px solid var(--line)}
+    padding:9px 14px;border-radius:8px;background:var(--card);border:1px solid var(--line);cursor:pointer}
+  .row:hover{border-color:var(--accent)}
   .row.done{border-color:var(--done-soft)}
   .row.flash{animation:flash 1.2s ease}
   @keyframes flash{0%{background:var(--done-soft)}100%{background:var(--card)}}
@@ -82,9 +115,10 @@
   .mark{font-size:15px;text-align:center}
   .name{font-weight:550;font-size:14.5px}
   .name .code{color:var(--pend);font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
-  .track{height:20px;background:var(--pend-soft);border-radius:5px;overflow:hidden;min-width:40px}
-  .track .seg2{height:100%;border-radius:5px}
+  .track{height:20px;background:var(--pend-soft);border-radius:5px;overflow:hidden;min-width:40px;position:relative}
+  .track .seg2{height:100%;border-radius:5px;transition:width .4s ease}
   .done .seg2{background:var(--done)}
+  .track .tpct{position:absolute;right:5px;top:50%;transform:translateY(-50%);font-size:10.5px;font-weight:600;color:var(--ink);opacity:.75}
   .row.progress{border-color:#e8d9b4}
   .progress .seg2{background:repeating-linear-gradient(45deg,var(--amber),var(--amber) 5px,#c69a4a 5px,#c69a4a 10px)}
   .pending .seg2{background:repeating-linear-gradient(45deg,var(--pend),var(--pend) 5px,#aeb6b2 5px,#aeb6b2 10px)}
@@ -99,6 +133,21 @@
   .divider{display:flex;align-items:center;gap:12px;margin:6px 0 18px}
   .divider .lbl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap}
   .divider .ln{flex:1;height:1px;background:var(--line)}
+  /* map */
+  .mapwrap{margin-bottom:36px}
+  .map-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  svg.map{width:100%;height:auto;display:block;touch-action:none}
+  .map .bound{fill:none;stroke:var(--line);stroke-width:.6;stroke-linejoin:round}
+  .map .bub{cursor:pointer;transition:opacity .15s} .map .bub:hover{opacity:.75}
+  .map .bub.done{fill:rgba(47,122,91,.75);stroke:var(--done)}
+  .map .bub.progress{fill:rgba(154,107,31,.8);stroke:var(--amber)}
+  .map .bub.pending{fill:none;stroke:var(--pend);stroke-dasharray:2 2}
+  .map .blab{fill:var(--ink);font-size:6px;text-anchor:middle;pointer-events:none;font-weight:600}
+  .maplegend{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--ink-soft)}
+  .maplegend span{display:inline-flex;align-items:center;gap:6px}
+  .lg{width:11px;height:11px;border-radius:50%;flex:none}
+  .lg.done{background:rgba(47,122,91,.75)} .lg.progress{background:rgba(154,107,31,.8)}
+  .lg.pending{background:transparent;border:1.5px dashed var(--pend)}
   /* in-progress ring */
   .ring-wrap{margin-bottom:36px}
   .ring-idle{background:var(--card);border:1px solid var(--line);border-radius:10px;
@@ -121,12 +170,30 @@
   .rs-n{font-size:22px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
   .rs-l{font-size:12px;color:var(--ink-soft)}
   @media(max-width:640px){.ring-body{gap:20px}.ring-stats{grid-template-columns:1fr}}
+  /* drill-down modal */
+  .modal{position:fixed;inset:0;background:rgba(28,35,33,.42);display:none;align-items:center;
+    justify-content:center;padding:20px;z-index:50}
+  .modal.show{display:flex}
+  .modal-card{background:var(--paper);border-radius:14px;max-width:520px;width:100%;max-height:82vh;
+    display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.28)}
+  .modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:20px 22px 14px;border-bottom:1px solid var(--line)}
+  .modal-head h3{margin:0;font-family:Georgia,serif;font-size:21px;font-weight:600}
+  .modal-head .mh-sub{font-size:12.5px;color:var(--ink-soft);margin-top:3px}
+  .modal-x{font:inherit;font-size:20px;line-height:1;color:var(--ink-soft);background:transparent;border:0;cursor:pointer;padding:2px 6px}
+  .modal-body{overflow:auto;padding:12px 22px 20px}
+  .dist{display:grid;grid-template-columns:1fr 90px 46px;align-items:center;gap:10px;padding:6px 2px;border-bottom:1px solid var(--line)}
+  .dist:last-child{border-bottom:0}
+  .dist .dn{font-size:13.5px} .dist .dtrack{height:8px;background:var(--pend-soft);border-radius:3px;overflow:hidden}
+  .dist .dfill{height:100%;background:var(--done);border-radius:3px}
+  .dist .dc{font-size:12.5px;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink-soft)}
+  .modal-note{color:var(--pend);font-size:13px;padding:16px 2px;text-align:center}
   footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;color:var(--ink-soft)}
   footer b{color:var(--ink);font-weight:600}
   @media(max-width:640px){
     .kpis{grid-template-columns:1fr}
     .row{grid-template-columns:22px 1fr auto auto;gap:9px;padding:8px 10px}
     .track{display:none} .count .s1{display:none}
+    .fn{grid-template-columns:96px 1fr auto}
   }
 </style>
 <div class="wrap">
@@ -141,13 +208,16 @@
     </div>
   </header>
 
+  <div class="stalebar" id="stalebar"></div>
+
   <div class="controls">
-    <div class="cgroup"><span class="clabel">Show</span>
+    <div class="cgroup"><span class="clabel">View</span>
       <span class="seg" id="filter">
         <button data-v="all" aria-pressed="true" type="button">All</button>
         <button data-v="collected" aria-pressed="false" type="button">Collected</button>
         <button data-v="remaining" aria-pressed="false" type="button">Remaining</button>
         <button data-v="inprogress" aria-pressed="false" type="button">In progress</button>
+        <button data-v="map" aria-pressed="false" type="button">Map</button>
       </span>
     </div>
     <div class="cgroup"><span class="clabel">Sort</span>
@@ -156,6 +226,9 @@
         <option value="banked">Banked</option>
         <option value="name">Name A–Z</option>
       </select>
+    </div>
+    <div class="cgroup"><span class="clabel">Find</span>
+      <input class="search" id="search" type="search" placeholder="state…" aria-label="Search states">
     </div>
     <div class="cgroup"><span class="clabel">Completed rate</span>
       <span class="slidewrap">
@@ -175,11 +248,28 @@
       <div class="big num" id="k3"></div><div class="bar"><div class="fill" id="k3f"></div></div></div>
   </div>
 
-  <div class="checkup unknown" id="checkup">
-    <span class="ck-dot"></span>
-    <div class="ck-t"><span class="ck-main" id="ck-main">Mirror checkup</span>
-      <span class="ck-sub" id="ck-sub"></span></div>
-    <span class="ck-when" id="ck-when"></span>
+  <div class="trend">
+    <div class="trend-top">
+      <h2>Growth trend</h2>
+      <span class="rate" id="rate"></span>
+    </div>
+    <div class="chart" id="chart"></div>
+    <p class="eta" id="eta"></p>
+    <div class="funnel" id="funnel"></div>
+  </div>
+
+  <div class="healthrow">
+    <div class="checkup unknown" id="checkup">
+      <span class="ck-dot"></span>
+      <div class="ck-t"><span class="ck-main" id="ck-main">Mirror checkup</span>
+        <span class="ck-sub" id="ck-sub"></span></div>
+      <span class="ck-when" id="ck-when"></span>
+    </div>
+    <div class="errcard ok" id="errcard">
+      <span class="err-dot"></span>
+      <div class="ck-t"><span class="ck-main" id="err-main">Error journal</span>
+        <span class="ck-sub" id="err-sub"></span></div>
+    </div>
   </div>
 
   <div class="storage">
@@ -194,18 +284,31 @@
 
   <div class="shead" id="shead">
     <h2>Per-state ledger</h2>
-    <span class="meta">bar = scale (status=1, √-scaled) · badge = where each state lives</span>
+    <span class="meta">bar = completion of est. · click a state for districts</span>
   </div>
   <div class="ring-wrap" id="ringwrap" hidden></div>
+  <div class="mapwrap" id="mapwrap" hidden></div>
   <div class="rows" id="rows"></div>
   <footer id="foot"></footer>
 </div>
+
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div><h3 id="m-title">State</h3><div class="mh-sub" id="m-sub"></div></div>
+      <button class="modal-x" id="m-x" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body" id="m-body"></div>
+  </div>
+</div>
+
 <script>
-  const EMBED = {"generated_at": "2026-07-08 11:42:31", "pgknown": true, "pg_status": {"state": "up", "rows": 4502421, "ms": 266, "detail": "4,502,421 rows mirrored", "checked_at": "2026-07-08 11:42:31"}, "in_progress": {"code": "29", "name": "Karnataka", "banked": 45582, "status1": 205629, "districts_done": 5, "age_min": 0.0}, "rows": [["9", "Uttar Pradesh", 1465061, 1514564, "Local + PG", "done"], ["28", "Andhra Pradesh", 790169, 1886845, "Local + PG", "done"], ["23", "Madhya Pradesh", 654453, 706079, "Local + PG", "done"], ["19", "West Bengal", 403588, 535715, "Local + PG", "done"], ["33", "Tamil Nadu", 358996, 409296, "Local + PG", "done"], ["22", "Chhattisgarh", 191712, 214917, "Local + PG", "done"], ["27", "Maharashtra", 161931, 234065, "Local + PG", "done"], ["10", "Bihar", 160273, 271038, "Local + PG", "done"], ["16", "Tripura", 76646, 81184, "Local + PG", "done"], ["3", "Punjab", 47605, 76485, "Local + PG", "done"], ["15", "Mizoram", 31584, 37160, "Local + PG", "done"], ["13", "Nagaland", 29426, 30784, "Local + PG", "done"], ["6", "Haryana", 23454, 37877, "Local + PG", "done"], ["14", "Manipur", 22660, 47668, "Local + PG", "done"], ["5", "Uttarakhand", 18388, 24914, "Local + PG", "done"], ["34", "Puducherry", 9793, 15698, "Local + PG", "done"], ["2", "Himachal Pradesh", 9084, 11414, "Local + PG", "done"], ["12", "Arunachal Pradesh", 6377, 6768, "Local + PG", "done"], ["17", "Meghalaya", 2481, 3892, "Local + PG", "done"], ["37", "Ladakh", 825, 878, "Local + PG", "done"], ["35", "Andaman & Nicobar", 20, 22, "Local + PG", "done"], ["11", "Sikkim", 19, 47, "Local + PG", "done"], ["30", "Goa", 4, 4, "Local + PG", "done"], ["29", "Karnataka", 45582, 205629, "Local + PG", "progress"], ["SEP", "", null, null, "", "sep"], ["20", "Jharkhand", null, 177255, "", "pending"], ["18", "Assam", null, 172393, "", "pending"], ["21", "Odisha", null, 159087, "", "pending"], ["24", "Gujarat", null, 150686, "", "pending"], ["32", "Kerala", null, 120864, "", "pending"], ["8", "Rajasthan", null, 110772, "", "pending"], ["1", "Jammu & Kashmir", null, 46755, "", "pending"]]};              // snapshot baked in at generation time
+  const EMBED = {"generated_at": "2026-07-08 11:54:10", "generated_epoch": 1783491850, "pgknown": true, "pg_status": {"state": "up", "rows": 4531145, "ms": 283, "detail": "4,531,145 rows mirrored", "checked_at": "2026-07-08 11:54:10"}, "in_progress": {"code": "29", "name": "Karnataka", "banked": 66596, "status1": 205629, "districts_done": 8, "age_min": 0.0}, "rows": [["9", "Uttar Pradesh", 1465061, 1514564, "Local + PG", "done"], ["28", "Andhra Pradesh", 790169, 1886845, "Local + PG", "done"], ["23", "Madhya Pradesh", 654453, 706079, "Local + PG", "done"], ["19", "West Bengal", 403588, 535715, "Local + PG", "done"], ["33", "Tamil Nadu", 358996, 409296, "Local + PG", "done"], ["22", "Chhattisgarh", 191712, 214917, "Local + PG", "done"], ["27", "Maharashtra", 161931, 234065, "Local + PG", "done"], ["10", "Bihar", 160273, 271038, "Local + PG", "done"], ["16", "Tripura", 76646, 81184, "Local + PG", "done"], ["3", "Punjab", 47605, 76485, "Local + PG", "done"], ["15", "Mizoram", 31584, 37160, "Local + PG", "done"], ["13", "Nagaland", 29426, 30784, "Local + PG", "done"], ["6", "Haryana", 23454, 37877, "Local + PG", "done"], ["14", "Manipur", 22660, 47668, "Local + PG", "done"], ["5", "Uttarakhand", 18388, 24914, "Local + PG", "done"], ["34", "Puducherry", 9793, 15698, "Local + PG", "done"], ["2", "Himachal Pradesh", 9084, 11414, "Local + PG", "done"], ["12", "Arunachal Pradesh", 6377, 6768, "Local + PG", "done"], ["17", "Meghalaya", 2481, 3892, "Local + PG", "done"], ["37", "Ladakh", 825, 878, "Local + PG", "done"], ["35", "Andaman & Nicobar", 20, 22, "Local + PG", "done"], ["11", "Sikkim", 19, 47, "Local + PG", "done"], ["30", "Goa", 4, 4, "Local + PG", "done"], ["29", "Karnataka", 66596, 205629, "Local + PG", "progress"], ["SEP", "", null, null, "", "sep"], ["20", "Jharkhand", null, 177255, "", "pending"], ["18", "Assam", null, 172393, "", "pending"], ["21", "Odisha", null, 159087, "", "pending"], ["24", "Gujarat", null, 150686, "", "pending"], ["32", "Kerala", null, 120864, "", "pending"], ["8", "Rajasthan", null, 110772, "", "pending"], ["1", "Jammu & Kashmir", null, 46755, "", "pending"]], "history": [[1783491850, 4531145]], "rate_per_hour": 0.0, "errors": {"count": 0, "recent": []}, "centroids": {"23": [78.5, 23.5], "5": [79.3, 30.0], "13": [94.5, 26.1], "34": [79.8, 11.9], "2": [77.2, 31.9], "12": [94.0, 28.2], "17": [91.3, 25.5], "37": [77.6, 34.2], "35": [92.9, 11.7], "11": [88.5, 27.6], "30": [74.1, 15.4], "28": [79.7, 15.9], "9": [80.9, 26.8], "19": [87.8, 23.7], "33": [78.6, 11.1], "10": [85.3, 25.6], "27": [75.7, 19.7], "22": [81.9, 21.3], "29": [76.0, 14.7], "20": [85.3, 23.6], "18": [92.9, 26.2], "21": [84.5, 20.3], "24": [71.6, 22.7], "32": [76.3, 10.5], "8": [74.2, 27.0], "16": [91.7, 23.8], "3": [75.3, 31.0], "14": [93.9, 24.7], "1": [75.3, 33.5], "6": [76.3, 29.2], "15": [92.8, 23.3]}};              // snapshot baked in at generation time
   const fmt = n => Math.round(n).toLocaleString("en-IN");
   const M = n => (n/1e6).toFixed(2) + "M";     // headline totals in millions
-  let STATE = EMBED, FRAC = 0.65, FILTER = "all", SORT = "size";
+  let STATE = EMBED, FRAC = 0.65, FILTER = "all", SORT = "size", SEARCH = "";
   let LIVE = false, lastFetch = 0, prevBanked = {};
+  let BOUNDS = null, DISTRICTS = null, distReq = null;   // lazily fetched assets
 
   const g = id => document.getElementById(id);
 
@@ -225,10 +328,15 @@
     return {done, prog, pend, R};
   }
 
+  function humanDur(hours){
+    if(!isFinite(hours) || hours <= 0) return "—";
+    if(hours < 1) return Math.round(hours*60) + " min";
+    if(hours < 48) return hours.toFixed(hours < 10 ? 1 : 0) + "h";
+    return (hours/24).toFixed(1) + " days";
+  }
+
   function render(){
     const {done, prog, pend, R} = computeRows();
-    const maxS1 = Math.max(...R.map(r => r[3]));
-    const scale = v => Math.max(6, Math.sqrt(v / maxS1) * 100);
 
     const nColl = done.length, nUniv = R.length;
     const banked = done.concat(prog).reduce((s,r) => s + (r[2] || 0), 0);
@@ -242,41 +350,55 @@
     g("k1").innerHTML = `${nColl}<span class="of">/ ${nUniv}</span>`;
     g("k1p").textContent = sp.toFixed(0) + "%"; g("k1f").style.width = sp + "%";
     g("k2").innerHTML = `${M(banked)}<span class="of">/ ~${M(estAll)}</span>`;
-    g("k2p").textContent = "~" + hp.toFixed(0) + "%"; g("k2f").style.width = hp + "%";
+    g("k2p").textContent = "~" + hp.toFixed(0) + "%"; g("k2f").style.width = Math.min(100,hp) + "%";
     g("k3").innerHTML = `${M(s1Coll)}<span class="of">/ ${M(s1Tot)}</span>`;
     g("k3p").textContent = s1p.toFixed(0) + "%"; g("k3f").style.width = s1p + "%";
 
-    // rows
+    trendChart(banked, estRem);
+    funnel(s1Tot, estAll, banked);
+
+    // rows — completion bar per state (fill = banked / est), size shown in count subtext
+    const q = SEARCH.trim().toLowerCase();
+    const match = r => !q || r[1].toLowerCase().includes(q);
     const rowHtml = r => {
-      const [code,name,bkv,s1v,st,status] = r;
+      const [code,name,bkv,s1v,storev,status] = r;
       const state = status || (bkv !== null ? "done" : "pending");
       const hasCount = state === "done" || state === "progress";
       const mark = state === "done" ? "✅" : state === "progress" ? "⏳" : "⬜";
+      const est = s1v * FRAC;
+      const comp = hasCount && est > 0 ? Math.min(100, bkv / est * 100) : 0;
       const primary = hasCount ? fmt(bkv) : "~" + fmt(s1v * FRAC);
       const badge = state === "progress"
         ? `<span class="badge prog">In progress</span>`
         : state === "done"
-          ? (st === "Local + PG" ? `<span class="badge pg">Local + PG</span>` : `<span class="badge local">Local</span>`)
+          ? (storev === "Local + PG" ? `<span class="badge pg">Local + PG</span>` : `<span class="badge local">Local</span>`)
           : `<span class="badge none">—</span>`;
       const flash = hasCount && prevBanked[code] !== undefined && prevBanked[code] !== bkv ? " flash" : "";
-      return `<div class="row ${state}${flash}">
+      const pctlab = hasCount ? `<span class="tpct">${comp.toFixed(0)}%</span>` : "";
+      return `<div class="row ${state}${flash}" data-code="${code}" role="button" tabindex="0"
+        title="Click for district breakdown">
         <div class="mark">${mark}</div>
         <div class="name">${name}<span class="code">${code}</span></div>
-        <div class="track"><div class="seg2" style="width:${scale(s1v).toFixed(1)}%"></div></div>
+        <div class="track"><div class="seg2" style="width:${(hasCount?comp:100).toFixed(1)}%"></div>${pctlab}</div>
         <div class="count">${primary}<span class="s1">${fmt(s1v)} reg.</span></div>
         ${badge}</div>`;
     };
     const divider = `<div class="divider"><span class="lbl">Remaining — ${pend.length} states, ~${(estRem/1e6).toFixed(2)}M est.</span><span class="ln"></span></div>`;
-    // in-progress tab shows the live-state ring instead of the ledger rows
-    const inRing = FILTER === "inprogress";
-    g("shead").hidden = inRing; g("rows").hidden = inRing; g("ringwrap").hidden = !inRing;
-    if (inRing){ renderRing(); }
+
+    const inRing = FILTER === "inprogress", inMap = FILTER === "map";
+    g("shead").hidden = inRing || inMap;
+    g("rows").hidden  = inRing || inMap;
+    g("ringwrap").hidden = !inRing;
+    g("mapwrap").hidden  = !inMap;
+    if (inRing) renderRing();
+    else if (inMap) mapRender(done, prog, pend);
     else {
+      const dd = done.filter(match), pp = prog.filter(match), qq = pend.filter(match);
       let html = "";
-      if (FILTER === "all")       html = done.map(rowHtml).join("") + prog.map(rowHtml).join("") + (pend.length?divider:"") + pend.map(rowHtml).join("");
-      else if (FILTER==="collected") html = done.map(rowHtml).join("");
-      else                        html = pend.map(rowHtml).join("");
-      g("rows").innerHTML = html || `<div class="divider"><span class="lbl">nothing to show</span><span class="ln"></span></div>`;
+      if (FILTER === "all")            html = dd.map(rowHtml).join("") + pp.map(rowHtml).join("") + (qq.length?divider:"") + qq.map(rowHtml).join("");
+      else if (FILTER === "collected") html = dd.map(rowHtml).join("");
+      else                             html = qq.map(rowHtml).join("");
+      g("rows").innerHTML = html || `<div class="divider"><span class="lbl">${q?"no match":"nothing to show"}</span><span class="ln"></span></div>`;
     }
 
     // footer + sub
@@ -291,8 +413,137 @@
       + `Regenerate: <span class="num">python3 scripts/build_states_md.py</span>.`;
 
     prevBanked = {}; done.concat(prog).forEach(r => prevBanked[r[0]] = r[2]);
-    renderCheckup();
+    renderCheckup(); renderErrors();
   }
+
+  function trendChart(banked, estRem){
+    const h = (STATE.history || []).filter(p => Array.isArray(p) && p.length === 2);
+    const box = g("chart");
+    const rate = STATE.rate_per_hour || 0;
+    // rate + ETA line
+    g("rate").innerHTML = rate > 0
+      ? `<b>${fmt(rate)}</b> houses/hr · <b>${fmt(rate*24)}</b>/day`
+      : `rate — awaiting a few more sync cycles`;
+    const nextM = (Math.floor(banked/1e6) + 1) * 1e6;
+    const etaNext = rate > 0 ? (nextM - banked)/rate : NaN;
+    const etaFin  = rate > 0 ? estRem/rate : NaN;
+    g("eta").innerHTML = `next milestone <b>${(nextM/1e6).toFixed(0)}M</b> in <b>${humanDur(etaNext)}</b>`
+      + ` · remaining states (~${M(estRem)}) in <b>${humanDur(etaFin)}</b> at current rate`;
+
+    if (h.length < 2){ box.innerHTML = `<div class="chart-empty">Building the growth trend — needs a few more 15-min sync cycles.</div>`; return; }
+    const W = 600, H = 140, pad = 6;
+    const t0 = h[0][0], t1 = h[h.length-1][0];
+    const vs = h.map(p => p[1]), vmin = Math.min(...vs), vmax = Math.max(...vs);
+    const spanT = (t1 - t0) || 1, spanV = (vmax - vmin) || 1;
+    const X = t => pad + (t - t0)/spanT * (W - 2*pad);
+    const Y = v => H - pad - (v - vmin)/spanV * (H - 2*pad);
+    const line = h.map((p,i) => `${i?"L":"M"}${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`).join(" ");
+    const area = `M${X(t0).toFixed(1)} ${(H-pad).toFixed(1)} ` +
+                 h.map(p => `L${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`).join(" ") +
+                 ` L${X(t1).toFixed(1)} ${(H-pad).toFixed(1)} Z`;
+    let ms = "";
+    for (let m = Math.ceil(vmin/1e6)*1e6; m <= vmax; m += 1e6){
+      const y = Y(m).toFixed(1);
+      ms += `<line class="ms-l" x1="${pad}" y1="${y}" x2="${W-pad}" y2="${y}"></line>`
+          + `<text class="ms-t" x="${W-pad}" y="${(y-2)}">${(m/1e6).toFixed(0)}M</text>`;
+    }
+    const last = h[h.length-1];
+    box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="spark" preserveAspectRatio="xMidYMid meet"
+        role="img" aria-label="Growth of banked houses over time">
+      ${ms}<path class="area" d="${area}"/><path class="line" d="${line}"/>
+      <circle class="head" cx="${X(last[0]).toFixed(1)}" cy="${Y(last[1]).toFixed(1)}" r="3.5"/></svg>`;
+  }
+
+  function funnel(reg, est, banked){
+    const pct = v => (reg ? Math.min(100, v/reg*100) : 0).toFixed(1) + "%";
+    const row = (cls,label,v) =>
+      `<div class="fn"><span class="fn-l">${label}</span>
+        <div class="fn-track"><div class="fn-fill ${cls}" style="width:${pct(v)}"></div></div>
+        <span class="fn-n">${M(v)}</span></div>`;
+    g("funnel").innerHTML =
+      row("reg","Registered (status=1)",reg) +
+      row("est",`Est. completed (×${(FRAC*100).toFixed(0)}%)`,est) +
+      row("bank","Banked so far",banked);
+  }
+
+  // ---- proportional-symbol map: boundary mesh + centroid bubbles ----
+  async function ensureBounds(){
+    if (BOUNDS) return BOUNDS;
+    try{
+      const r = await fetch("india_bounds.json", {cache:"force-cache"});
+      BOUNDS = await r.json();
+    }catch(e){ BOUNDS = {arcs:[], bbox:[68,7,98,37]}; }
+    return BOUNDS;
+  }
+  async function mapRender(done, prog, pend){
+    const wrap = g("mapwrap");
+    const b = await ensureBounds();
+    if (FILTER !== "map") return;                 // user switched away while fetching
+    const [x0,y0,x1,y1] = b.bbox;
+    const S = 26, k = Math.cos((y0+y1)/2 * Math.PI/180);   // deg→unit, lon squeezed by cos(lat)
+    const px = lon => (lon - x0) * k * S;
+    const py = lat => (y1 - lat) * S;
+    const W = (x1-x0)*k*S, Ht = (y1-y0)*S;
+    const paths = (b.arcs||[]).map(a =>
+      `<path class="bound" d="${a.map((p,i)=>`${i?"L":"M"}${px(p[0]).toFixed(1)} ${py(p[1]).toFixed(1)}`).join(" ")}"/>`
+    ).join("");
+
+    const C = STATE.centroids || {};
+    const withC = [...done, ...prog, ...pend].filter(r => C[r[0]]);
+    const maxBk = Math.max(1, ...withC.map(r => r[2] || 0));
+    const bubbles = withC.map(r => {
+      const [code,name,bkv,,,status] = r;
+      const state = status || (bkv !== null ? "done" : "pending");
+      const c = C[code], x = px(c[0]).toFixed(1), y = py(c[1]).toFixed(1);
+      const rad = (bkv > 0) ? (4 + 20*Math.sqrt(bkv/maxBk)) : 3.2;
+      const lab = rad > 9 ? `<text class="blab" x="${x}" y="${(+y+2).toFixed(1)}">${fmt(bkv)}</text>` : "";
+      return `<g class="bub ${state}" data-code="${code}" role="button" tabindex="0"
+          transform="translate(${x} ${y})"><title>${name} — ${bkv!=null?fmt(bkv)+" banked":"pending"}</title>
+          <circle class="bub ${state}" r="${rad.toFixed(1)}" cx="0" cy="0"></circle></g>${lab}`;
+    }).join("");
+
+    wrap.innerHTML = `<div class="map-card">
+      <svg class="map" viewBox="${(-4).toFixed(0)} ${(-4).toFixed(0)} ${(W+8).toFixed(0)} ${(Ht+8).toFixed(0)}"
+        role="img" aria-label="Map of India by houses banked per state">
+        ${paths}${bubbles}
+      </svg>
+      <div class="maplegend">
+        <span><span class="lg done"></span>collected</span>
+        <span><span class="lg progress"></span>in progress</span>
+        <span><span class="lg pending"></span>remaining</span>
+        <span>· bubble area ∝ houses banked · click a state for districts</span>
+      </div></div>`;
+  }
+
+  // ---- district drill-down modal ----
+  async function ensureDistricts(){
+    if (DISTRICTS) return DISTRICTS;
+    if (!distReq) distReq = fetch("districts_data.json", {cache:"no-store"})
+      .then(r => r.json()).then(d => (DISTRICTS = d)).catch(() => (DISTRICTS = {districts:{}}));
+    return distReq;
+  }
+  function findRow(code){ return STATE.rows.find(r => r[0] === code); }
+  async function openDrill(code){
+    const r = findRow(code); if (!r) return;
+    const [,name,bkv,s1v] = r;
+    g("m-title").textContent = name;
+    g("m-sub").innerHTML = `state ${code} · ${bkv!=null?`<b>${fmt(bkv)}</b> banked`:"not collected yet"} · ${fmt(s1v)} registered`;
+    g("m-body").innerHTML = `<div class="modal-note">loading districts…</div>`;
+    g("modal").classList.add("show");
+    const d = await ensureDistricts();
+    const list = (d.districts || {})[code] || [];
+    if (!list.length){
+      g("m-body").innerHTML = `<div class="modal-note">No per-district data yet — this state is ${bkv!=null?"collected but pre-dates district tracking":"not collected"}.</div>`;
+      return;
+    }
+    const max = Math.max(...list.map(x => x[1]));
+    g("m-body").innerHTML = list.map(([dn,n]) =>
+      `<div class="dist"><span class="dn">${dn}</span>
+        <span class="dtrack"><span class="dfill" style="width:${(n/max*100).toFixed(1)}%"></span></span>
+        <span class="dc">${fmt(n)}</span></div>`).join("")
+      + `<div class="modal-note">${list.length} districts · ${fmt(list.reduce((s,x)=>s+x[1],0))} houses</div>`;
+  }
+  function closeModal(){ g("modal").classList.remove("show"); }
 
   function renderRing(){
     const ip = STATE.in_progress, w = g("ringwrap");
@@ -300,12 +551,9 @@
       w.innerHTML = `<div class="ring-idle">No state is being extracted right now — the campaign is idle or between states. The live state and its progress ring appear here while a district runner is writing.</div>`;
       return;
     }
-    // A state still being extracted is measured against its real registered universe
-    // (status=1), NOT the 65% estimate — banked can already exceed the estimate (so the
-    // ring would falsely peg at 100% mid-run). It leaves this ring the moment it's done.
     const done = ip.banked, reg = ip.status1;
     const pct = reg ? Math.min(100, done/reg*100) : 0;
-    const C = 2 * Math.PI * 52, off = C * (1 - pct/100);         // r=52 ring geometry
+    const C = 2 * Math.PI * 52, off = C * (1 - pct/100);
     w.innerHTML = `
       <div class="ring-card">
         <div class="ring-head"><span class="ring-live-dot"></span> Currently extracting
@@ -340,17 +588,42 @@
     g("ck-when").textContent = s.checked_at && s.checked_at !== "—" ? "checked " + s.checked_at : "";
   }
 
+  function renderErrors(){
+    const e = STATE.errors || {count:0, recent:[]};
+    const el = g("errcard");
+    el.className = "errcard " + (e.count ? "warn" : "ok");
+    g("err-main").textContent = e.count ? `Error journal: ${fmt(e.count)} rows skipped` : "Error journal: clean";
+    const last = e.recent && e.recent[0];
+    g("err-sub").textContent = e.count && last
+      ? `latest — ${last.stage}${last.context ? " · " + last.context : ""}`
+      : "poison rows are journaled & skipped, never crash the run";
+  }
+
+  function freshness(){
+    const ge = STATE.generated_epoch;
+    if (!ge) return {cls:"", mins:null};
+    const mins = Math.max(0, Date.now()/1000 - ge) / 60;
+    const cls = mins < 25 ? "fresh" : mins < 70 ? "warn" : "stale";
+    return {cls, mins};
+  }
+
   function setLiveText(){
-    const gen = STATE.generated_at;
+    const gen = STATE.generated_at, f = freshness();
+    // dot colour reflects feed freshness (fresh/warn/stale), not just fetch success
+    g("dot").className = "dot" + (LIVE && f.cls ? " " + f.cls : "");
     if (LIVE){
       const secs = Math.round((Date.now() - lastFetch)/1000);
       const ago = secs < 60 ? `${secs}s` : `${Math.round(secs/60)}m`;
-      g("dot").className = "dot on";
-      g("livetxt").innerHTML = `<b>Live</b> · updated ${ago} ago · generated ${gen}`;
+      const label = f.cls === "fresh" ? "Live" : f.cls === "warn" ? "Slow" : "Stale";
+      g("livetxt").innerHTML = `<b>${label}</b> · re-checked ${ago} ago · generated ${gen}`;
     } else {
-      g("dot").className = "dot";
-      g("livetxt").innerHTML = `Snapshot · generated ${gen} <span style="color:var(--amber)">(sandboxed — serve the file locally for live updates)</span>`;
+      g("livetxt").innerHTML = `Snapshot · generated ${gen} <span style="color:var(--amber)">(sandboxed — serve the file over http for live updates)</span>`;
     }
+    const sb = g("stalebar");
+    if (LIVE && f.cls === "stale"){
+      sb.className = "stalebar show";
+      sb.innerHTML = `⚠ Feed is ${Math.round(f.mins)} min old — the 15-min sync on the 148 box may have stalled. Numbers below are the last good snapshot.`;
+    } else sb.className = "stalebar";
   }
 
   async function poll(){
@@ -358,8 +631,8 @@
       const res = await fetch("states_data.json?t=" + Date.now(), {cache:"no-store"});
       if(!res.ok) throw 0;
       const data = await res.json();
-      const changed = JSON.stringify(data.rows) !== JSON.stringify(STATE.rows)
-                   || JSON.stringify(data.in_progress) !== JSON.stringify(STATE.in_progress);
+      const key = d => JSON.stringify([d.rows, d.in_progress, d.history, d.errors, d.pg_status]);
+      const changed = key(data) !== key(STATE);
       STATE = data; LIVE = true; lastFetch = Date.now();
       if (changed) render();
       setLiveText();
@@ -376,8 +649,23 @@
     render();
   });
   g("sort").addEventListener("change", e => { SORT = e.target.value; render(); });
+  g("search").addEventListener("input", e => { SEARCH = e.target.value; if(FILTER!=="map"&&FILTER!=="inprogress") render(); });
   g("frac").addEventListener("input", e => { FRAC = +e.target.value/100; g("fracval").textContent = e.target.value + "%"; render(); });
   g("refresh").addEventListener("click", poll);
+
+  // drill-down open (row or map bubble) + modal close
+  function onActivate(e){
+    const el = e.target.closest("[data-code]"); if(!el) return;
+    const code = el.dataset.code; if(code && code !== "SEP") openDrill(code);
+  }
+  g("rows").addEventListener("click", onActivate);
+  g("mapwrap").addEventListener("click", onActivate);
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closeModal();
+    if ((e.key === "Enter" || e.key === " ") && e.target.dataset && e.target.dataset.code){ e.preventDefault(); onActivate(e); }
+  });
+  g("m-x").addEventListener("click", closeModal);
+  g("modal").addEventListener("click", e => { if (e.target === g("modal")) closeModal(); });
 
   render(); poll();
   setInterval(poll, 20000);     // re-pull the feed every 20s (no-op in the sandbox)
