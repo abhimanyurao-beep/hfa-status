@@ -29,6 +29,13 @@
     border-radius:20px;padding:3px 12px;cursor:pointer}
   .btn:hover{border-color:var(--accent)}
   .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  /* tabs */
+  .tabs{display:flex;gap:4px;margin-top:16px;border-bottom:1px solid var(--line)}
+  .tabs button{font:inherit;font-size:13.5px;font-weight:550;color:var(--ink-soft);background:transparent;
+    border:0;border-bottom:2px solid transparent;padding:9px 4px;margin-right:18px;cursor:pointer}
+  .tabs button:hover{color:var(--ink)}
+  .tabs button[aria-selected=true]{color:var(--accent);border-bottom-color:var(--accent)}
+  .tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   /* stale banner */
   .stalebar{display:none;align-items:center;gap:10px;background:var(--red-soft);color:var(--red);
     border:1px solid #e3b6ac;border-radius:10px;padding:11px 16px;margin-bottom:18px;font-size:13.5px;font-weight:500}
@@ -198,13 +205,17 @@
 </style>
 <div class="wrap">
   <header>
-    <p class="eyebrow">Bhuvan HFA · PMAY completed-houses extraction</p>
-    <h1>State collection progress</h1>
+    <p class="eyebrow" id="eyebrow">Bhuvan HFA · PMAY completed-houses extraction</p>
+    <h1 id="h1">State collection progress</h1>
     <p class="sub" id="sub"></p>
     <div class="live">
       <span class="dot" id="dot"></span>
       <span id="livetxt">loading…</span>
       <button class="btn" id="refresh" type="button">Refresh</button>
+    </div>
+    <div class="tabs" id="tabs" role="tablist">
+      <button data-tab="completed" role="tab" aria-selected="true" type="button">Completed houses</button>
+      <button data-tab="pending" role="tab" aria-selected="false" type="button">Other stages (pending)</button>
     </div>
   </header>
 
@@ -230,7 +241,7 @@
     <div class="cgroup"><span class="clabel">Find</span>
       <input class="search" id="search" type="search" placeholder="state…" aria-label="Search states">
     </div>
-    <div class="cgroup"><span class="clabel">Completed rate</span>
+    <div class="cgroup"><span class="clabel" id="fraclabel">Completed rate</span>
       <span class="slidewrap">
         <input type="range" id="frac" min="55" max="75" step="1" value="65"
                aria-label="Completed fraction of status=1">
@@ -242,7 +253,7 @@
   <div class="kpis">
     <div class="kpi"><p class="cap">States collected</p><span class="pct" id="k1p"></span>
       <div class="big num" id="k1"></div><div class="bar"><div class="fill" id="k1f"></div></div></div>
-    <div class="kpi"><p class="cap">Houses banked (Completed)</p><span class="pct" id="k2p"></span>
+    <div class="kpi"><p class="cap" id="k2cap">Houses banked (Completed)</p><span class="pct" id="k2p"></span>
       <div class="big num" id="k2"></div><div class="bar"><div class="fill" id="k2f"></div></div></div>
     <div class="kpi"><p class="cap">status=1 measured</p><span class="pct" id="k3p"></span>
       <div class="big num" id="k3"></div><div class="bar"><div class="fill" id="k3f"></div></div></div>
@@ -303,10 +314,26 @@
 </div>
 
 <script>
-  const EMBED = {"generated_at": "2026-07-09 09:11:54", "generated_epoch": 1783568514, "pgknown": true, "pg_status": {"state": "up", "rows": 5386890, "ms": 531, "detail": "5,386,890 rows mirrored", "checked_at": "2026-07-09 09:11:53"}, "in_progress": null, "rows": [["9", "Uttar Pradesh", 1465061, 1514564, "Local + PG", "done"], ["28", "Andhra Pradesh", 790169, 1886845, "Local + PG", "done"], ["23", "Madhya Pradesh", 654453, 706079, "Local + PG", "done"], ["19", "West Bengal", 403588, 535715, "Local + PG", "done"], ["33", "Tamil Nadu", 358996, 409296, "Local + PG", "done"], ["22", "Chhattisgarh", 191712, 214917, "Local + PG", "done"], ["27", "Maharashtra", 161931, 234065, "Local + PG", "done"], ["10", "Bihar", 160273, 271038, "Local + PG", "done"], ["18", "Assam", 143364, 172393, "Local + PG", "done"], ["29", "Karnataka", 141695, 205629, "Local + PG", "done"], ["24", "Gujarat", 141519, 150686, "Local + PG", "done"], ["21", "Odisha", 137549, 159087, "Local + PG", "done"], ["20", "Jharkhand", 136242, 177255, "Local + PG", "done"], ["32", "Kerala", 102452, 120864, "Local + PG", "done"], ["8", "Rajasthan", 87731, 110772, "Local + PG", "done"], ["16", "Tripura", 76646, 81184, "Local + PG", "done"], ["3", "Punjab", 47605, 76485, "Local + PG", "done"], ["1", "Jammu & Kashmir", 31789, 46755, "Local + PG", "done"], ["15", "Mizoram", 31584, 37160, "Local + PG", "done"], ["13", "Nagaland", 29426, 30784, "Local + PG", "done"], ["6", "Haryana", 23454, 37877, "Local + PG", "done"], ["14", "Manipur", 22660, 47668, "Local + PG", "done"], ["5", "Uttarakhand", 18388, 24914, "Local + PG", "done"], ["34", "Puducherry", 9793, 15698, "Local + PG", "done"], ["2", "Himachal Pradesh", 9084, 11414, "Local + PG", "done"], ["12", "Arunachal Pradesh", 6377, 6768, "Local + PG", "done"], ["17", "Meghalaya", 2481, 3892, "Local + PG", "done"], ["37", "Ladakh", 825, 878, "Local + PG", "done"], ["35", "Andaman & Nicobar", 20, 22, "Local + PG", "done"], ["11", "Sikkim", 19, 47, "Local + PG", "done"], ["30", "Goa", 4, 4, "Local + PG", "done"], ["SEP", "", null, null, "", "sep"]], "history": [[1783491850, 4531145], [1783492043, 4535259], [1783492945, 4553552], [1783493820, 4574586], [1783494738, 4599726], [1783495645, 4619778], [1783496524, 4639946], [1783497414, 4662876], [1783498320, 4689583], [1783499240, 4716718], [1783500150, 4741439], [1783501044, 4758608], [1783501949, 4774929], [1783502854, 4790331], [1783503766, 4814893], [1783504666, 4841297], [1783505582, 4864583], [1783506483, 4880376], [1783508283, 4914655], [1783513769, 5047871], [1783514562, 5070157], [1783515461, 5093730], [1783528899, 5386890], [1783529795, 5386890], [1783530691, 5386890], [1783531592, 5386890], [1783532491, 5386890], [1783533400, 5386890], [1783534312, 5386890], [1783535195, 5386890], [1783536097, 5386890], [1783536998, 5386890], [1783537887, 5386890], [1783538792, 5386890], [1783539688, 5386890], [1783540590, 5386890], [1783541488, 5386890], [1783542392, 5386890], [1783543295, 5386890], [1783544187, 5386890], [1783545096, 5386890], [1783546042, 5386890], [1783546969, 5386890], [1783547791, 5386890], [1783548695, 5386890], [1783549593, 5386890], [1783550496, 5386890], [1783551389, 5386890], [1783552286, 5386890], [1783553187, 5386890], [1783554089, 5386890], [1783554994, 5386890], [1783555898, 5386890], [1783556788, 5386890], [1783557687, 5386890], [1783558582, 5386890], [1783559491, 5386890], [1783560388, 5386890], [1783561285, 5386890], [1783562193, 5386890], [1783563090, 5386890], [1783563993, 5386890], [1783564888, 5386890], [1783565788, 5386890], [1783566690, 5386890], [1783567589, 5386890], [1783568514, 5386890]], "rate_per_hour": 0.0, "errors": {"count": 0, "recent": []}, "centroids": {"23": [78.5, 23.5], "5": [79.3, 30.0], "13": [94.5, 26.1], "34": [79.8, 11.9], "2": [77.2, 31.9], "12": [94.0, 28.2], "17": [91.3, 25.5], "37": [77.6, 34.2], "35": [92.9, 11.7], "11": [88.5, 27.6], "30": [74.1, 15.4], "28": [79.7, 15.9], "9": [80.9, 26.8], "19": [87.8, 23.7], "33": [78.6, 11.1], "10": [85.3, 25.6], "27": [75.7, 19.7], "22": [81.9, 21.3], "29": [76.0, 14.7], "20": [85.3, 23.6], "18": [92.9, 26.2], "21": [84.5, 20.3], "24": [71.6, 22.7], "32": [76.3, 10.5], "8": [74.2, 27.0], "16": [91.7, 23.8], "3": [75.3, 31.0], "14": [93.9, 24.7], "1": [75.3, 33.5], "6": [76.3, 29.2], "15": [92.8, 23.3]}};              // snapshot baked in at generation time
+  // Two feeds, same shape — Completed houses, and everything else (other construction stages).
+  const TABS = {
+    completed: {
+      embed: {"generated_at": "2026-07-09 09:46:06", "generated_epoch": 1783570566, "pgknown": true, "pg_status": {"state": "up", "rows": 5432080, "ms": 6652, "detail": "5,432,080 rows mirrored", "checked_at": "2026-07-09 09:45:59"}, "in_progress": {"code": "28", "name": "Andhra Pradesh", "banked": 790170, "status1": 1886845, "districts_done": 25, "age_min": 32.1}, "rows": [["9", "Uttar Pradesh", 1465061, 1514564, "Local + PG", "done"], ["23", "Madhya Pradesh", 654453, 706079, "Local + PG", "done"], ["19", "West Bengal", 403588, 535715, "Local + PG", "done"], ["33", "Tamil Nadu", 358996, 409296, "Local + PG", "done"], ["22", "Chhattisgarh", 191712, 214917, "Local + PG", "done"], ["27", "Maharashtra", 161931, 234065, "Local + PG", "done"], ["10", "Bihar", 160273, 271038, "Local + PG", "done"], ["18", "Assam", 143364, 172393, "Local + PG", "done"], ["29", "Karnataka", 141695, 205629, "Local + PG", "done"], ["24", "Gujarat", 141519, 150686, "Local + PG", "done"], ["21", "Odisha", 137549, 159087, "Local + PG", "done"], ["20", "Jharkhand", 136242, 177255, "Local + PG", "done"], ["32", "Kerala", 102452, 120864, "Local + PG", "done"], ["8", "Rajasthan", 87731, 110772, "Local + PG", "done"], ["16", "Tripura", 76646, 81184, "Local + PG", "done"], ["3", "Punjab", 47605, 76485, "Local + PG", "done"], ["1", "Jammu & Kashmir", 31789, 46755, "Local + PG", "done"], ["15", "Mizoram", 31584, 37160, "Local + PG", "done"], ["13", "Nagaland", 29426, 30784, "Local + PG", "done"], ["6", "Haryana", 23454, 37877, "Local + PG", "done"], ["14", "Manipur", 22660, 47668, "Local + PG", "done"], ["5", "Uttarakhand", 18388, 24914, "Local + PG", "done"], ["34", "Puducherry", 9793, 15698, "Local + PG", "done"], ["2", "Himachal Pradesh", 9084, 11414, "Local + PG", "done"], ["12", "Arunachal Pradesh", 6377, 6768, "Local + PG", "done"], ["17", "Meghalaya", 2481, 3892, "Local + PG", "done"], ["37", "Ladakh", 825, 878, "Local + PG", "done"], ["35", "Andaman & Nicobar", 20, 22, "Local + PG", "done"], ["11", "Sikkim", 19, 47, "Local + PG", "done"], ["30", "Goa", 4, 4, "Local + PG", "done"], ["28", "Andhra Pradesh", 790170, 1886845, "Local + PG", "progress"], ["SEP", "", null, null, "", "sep"]], "history": [[1783491850, 4531145], [1783492043, 4535259], [1783492945, 4553552], [1783493820, 4574586], [1783494738, 4599726], [1783495645, 4619778], [1783496524, 4639946], [1783497414, 4662876], [1783498320, 4689583], [1783499240, 4716718], [1783500150, 4741439], [1783501044, 4758608], [1783501949, 4774929], [1783502854, 4790331], [1783503766, 4814893], [1783504666, 4841297], [1783505582, 4864583], [1783506483, 4880376], [1783508283, 4914655], [1783513769, 5047871], [1783514562, 5070157], [1783515461, 5093730], [1783528899, 5386890], [1783529795, 5386890], [1783530691, 5386890], [1783531592, 5386890], [1783532491, 5386890], [1783533400, 5386890], [1783534312, 5386890], [1783535195, 5386890], [1783536097, 5386890], [1783536998, 5386890], [1783537887, 5386890], [1783538792, 5386890], [1783539688, 5386890], [1783540590, 5386890], [1783541488, 5386890], [1783542392, 5386890], [1783543295, 5386890], [1783544187, 5386890], [1783545096, 5386890], [1783546042, 5386890], [1783546969, 5386890], [1783547791, 5386890], [1783548695, 5386890], [1783549593, 5386890], [1783550496, 5386890], [1783551389, 5386890], [1783552286, 5386890], [1783553187, 5386890], [1783554089, 5386890], [1783554994, 5386890], [1783555898, 5386890], [1783556788, 5386890], [1783557687, 5386890], [1783558582, 5386890], [1783559491, 5386890], [1783560388, 5386890], [1783561285, 5386890], [1783562193, 5386890], [1783563090, 5386890], [1783563993, 5386890], [1783564888, 5386890], [1783565788, 5386890], [1783566690, 5386890], [1783567589, 5386890], [1783568514, 5386890], [1783570566, 5386891]], "rate_per_hour": 0.4, "errors": {"count": 0, "recent": []}, "centroids": {"23": [78.5, 23.5], "5": [79.3, 30.0], "13": [94.5, 26.1], "34": [79.8, 11.9], "2": [77.2, 31.9], "12": [94.0, 28.2], "17": [91.3, 25.5], "37": [77.6, 34.2], "35": [92.9, 11.7], "11": [88.5, 27.6], "30": [74.1, 15.4], "28": [79.7, 15.9], "9": [80.9, 26.8], "19": [87.8, 23.7], "33": [78.6, 11.1], "10": [85.3, 25.6], "27": [75.7, 19.7], "22": [81.9, 21.3], "29": [76.0, 14.7], "20": [85.3, 23.6], "18": [92.9, 26.2], "21": [84.5, 20.3], "24": [71.6, 22.7], "32": [76.3, 10.5], "8": [74.2, 27.0], "16": [91.7, 23.8], "3": [75.3, 31.0], "14": [93.9, 24.7], "1": [75.3, 33.5], "6": [76.3, 29.2], "15": [92.8, 23.3]}, "frac_default": 65}, file: "states_data.json", distfile: "districts_data.json",
+      eyebrow: "Bhuvan HFA · PMAY completed-houses extraction", h1: "State collection progress",
+      k2cap: "Houses banked (Completed)", fraclabel: "Completed rate",
+      measure: "Completed", estLabel: v => `Est. completed (×${v}%)`,
+    },
+    pending: {
+      embed: {"generated_at": "2026-07-09 09:46:06", "generated_epoch": 1783570566, "pgknown": true, "pg_status": {"state": "up", "rows": 5432080, "ms": 6652, "detail": "5,432,080 rows mirrored", "checked_at": "2026-07-09 09:45:59"}, "in_progress": {"code": "28", "name": "Andhra Pradesh", "banked": 51702, "status1": 1886845, "districts_done": 1, "age_min": 0.0}, "rows": [["28", "Andhra Pradesh", 51702, 1886845, "Local + PG", "progress"], ["SEP", "", null, null, "", "sep"], ["9", "Uttar Pradesh", null, 1514564, "", "pending"], ["23", "Madhya Pradesh", null, 706079, "", "pending"], ["19", "West Bengal", null, 535715, "", "pending"], ["33", "Tamil Nadu", null, 409296, "", "pending"], ["10", "Bihar", null, 271038, "", "pending"], ["27", "Maharashtra", null, 234065, "", "pending"], ["22", "Chhattisgarh", null, 214917, "", "pending"], ["29", "Karnataka", null, 205629, "", "pending"], ["20", "Jharkhand", null, 177255, "", "pending"], ["18", "Assam", null, 172393, "", "pending"], ["21", "Odisha", null, 159087, "", "pending"], ["24", "Gujarat", null, 150686, "", "pending"], ["32", "Kerala", null, 120864, "", "pending"], ["8", "Rajasthan", null, 110772, "", "pending"], ["16", "Tripura", null, 81184, "", "pending"], ["3", "Punjab", null, 76485, "", "pending"], ["14", "Manipur", null, 47668, "", "pending"], ["1", "Jammu & Kashmir", null, 46755, "", "pending"], ["6", "Haryana", null, 37877, "", "pending"], ["15", "Mizoram", null, 37160, "", "pending"], ["13", "Nagaland", null, 30784, "", "pending"], ["5", "Uttarakhand", null, 24914, "", "pending"], ["34", "Puducherry", null, 15698, "", "pending"], ["2", "Himachal Pradesh", null, 11414, "", "pending"], ["12", "Arunachal Pradesh", null, 6768, "", "pending"], ["17", "Meghalaya", null, 3892, "", "pending"], ["37", "Ladakh", null, 878, "", "pending"], ["11", "Sikkim", null, 47, "", "pending"], ["35", "Andaman & Nicobar", null, 22, "", "pending"], ["30", "Goa", null, 4, "", "pending"]], "history": [[1783570566, 51702]], "rate_per_hour": 0.0, "errors": {"count": 0, "recent": []}, "centroids": {"23": [78.5, 23.5], "5": [79.3, 30.0], "13": [94.5, 26.1], "34": [79.8, 11.9], "2": [77.2, 31.9], "12": [94.0, 28.2], "17": [91.3, 25.5], "37": [77.6, 34.2], "35": [92.9, 11.7], "11": [88.5, 27.6], "30": [74.1, 15.4], "28": [79.7, 15.9], "9": [80.9, 26.8], "19": [87.8, 23.7], "33": [78.6, 11.1], "10": [85.3, 25.6], "27": [75.7, 19.7], "22": [81.9, 21.3], "29": [76.0, 14.7], "20": [85.3, 23.6], "18": [92.9, 26.2], "21": [84.5, 20.3], "24": [71.6, 22.7], "32": [76.3, 10.5], "8": [74.2, 27.0], "16": [91.7, 23.8], "3": [75.3, 31.0], "14": [93.9, 24.7], "1": [75.3, 33.5], "6": [76.3, 29.2], "15": [92.8, 23.3]}, "frac_default": 35}, file: "states_data_pending.json", distfile: "districts_data_pending.json",
+      eyebrow: "Bhuvan HFA · PMAY other-construction-stages extraction", h1: "State collection progress — other stages",
+      k2cap: "Houses banked (other stages)", fraclabel: "Non-completed rate",
+      measure: "other-stage", estLabel: v => `Est. other stages (×${v}%)`,
+    },
+  };
+  let ACTIVE = "completed";
   const fmt = n => Math.round(n).toLocaleString("en-IN");
   const M = n => (n/1e6).toFixed(2) + "M";     // headline totals in millions
-  let STATE = EMBED, FRAC = 0.65, FILTER = "all", SORT = "size", SEARCH = "";
+  let STATE = TABS[ACTIVE].embed, FRAC = (TABS[ACTIVE].embed.frac_default || 65) / 100;
+  let FILTER = "all", SORT = "size", SEARCH = "";
   let LIVE = false, lastFetch = 0, prevBanked = {};
   let BOUNDS = null, DISTRICTS = null, distReq = null;   // lazily fetched assets
 
@@ -402,14 +429,15 @@
     }
 
     // footer + sub
-    g("sub").textContent = `${nColl} of ${nUniv} data-bearing states banked · ${M(banked)} completed houses on disk`;
+    const measure = TABS[ACTIVE].measure;
+    g("sub").textContent = `${nColl} of ${nUniv} data-bearing states banked · ${M(banked)} ${measure} houses on disk`;
     const pgk = STATE.pgknown;
     g("pgnote").textContent = pgk ? "" :
       "Postgres mirror lives on the 148 box — its per-state contents aren't visible from this host; everything shown is Local (source of truth).";
     g("foot").innerHTML =
-      `<b>Banked: ${M(banked)} Completed</b> across ${nColl} states — all on <b>Local</b> JSONL (source of truth)`
+      `<b>Banked: ${M(banked)} ${measure}</b> across ${nColl} states — all on <b>Local</b> JSONL (source of truth)`
       + (pgk ? `, mirrored to Postgres per <span class="num">pgload.state</span>.` : `; the Postgres mirror runs on the 148 box.`)
-      + `<br><b>Remaining: ~${M(estRem)} est.</b> at ${(FRAC*100).toFixed(0)}% completion — AP + UP hold ~55% of it. `
+      + `<br><b>Remaining: ~${M(estRem)} est.</b> at ${(FRAC*100).toFixed(0)}% rate — AP + UP hold a large share of it. `
       + `Regenerate: <span class="num">python3 scripts/build_states_md.py</span>.`;
 
     prevBanked = {}; done.concat(prog).forEach(r => prevBanked[r[0]] = r[2]);
@@ -462,7 +490,7 @@
         <span class="fn-n">${M(v)}</span></div>`;
     g("funnel").innerHTML =
       row("reg","Registered (status=1)",reg) +
-      row("est",`Est. completed (×${(FRAC*100).toFixed(0)}%)`,est) +
+      row("est",TABS[ACTIVE].estLabel((FRAC*100).toFixed(0)),est) +
       row("bank","Banked so far",banked);
   }
 
@@ -518,7 +546,7 @@
   // ---- district drill-down modal ----
   async function ensureDistricts(){
     if (DISTRICTS) return DISTRICTS;
-    if (!distReq) distReq = fetch("districts_data.json", {cache:"no-store"})
+    if (!distReq) distReq = fetch(TABS[ACTIVE].distfile, {cache:"no-store"})
       .then(r => r.json()).then(d => (DISTRICTS = d)).catch(() => (DISTRICTS = {districts:{}}));
     return distReq;
   }
@@ -627,19 +655,42 @@
   }
 
   async function poll(){
+    const tab = ACTIVE;
     try{
-      const res = await fetch("states_data.json?t=" + Date.now(), {cache:"no-store"});
+      const res = await fetch(TABS[tab].file + "?t=" + Date.now(), {cache:"no-store"});
       if(!res.ok) throw 0;
       const data = await res.json();
+      if (tab !== ACTIVE) return;    // user switched tabs while this fetch was in flight
       const key = d => JSON.stringify([d.rows, d.in_progress, d.history, d.errors, d.pg_status]);
       const changed = key(data) !== key(STATE);
       STATE = data; LIVE = true; lastFetch = Date.now();
       if (changed) render();
       setLiveText();
     }catch(e){
+      if (tab !== ACTIVE) return;
       LIVE = false; setLiveText();
     }
   }
+
+  function selectTab(tab){
+    if (tab === ACTIVE) return;
+    ACTIVE = tab;
+    const t = TABS[tab];
+    [...g("tabs").children].forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
+    g("eyebrow").textContent = t.eyebrow;
+    g("h1").textContent = t.h1;
+    g("k2cap").textContent = t.k2cap;
+    g("fraclabel").textContent = t.fraclabel;
+    STATE = t.embed; FRAC = (t.embed.frac_default || 65) / 100;
+    g("frac").value = Math.round(FRAC * 100); g("fracval").textContent = Math.round(FRAC * 100) + "%";
+    DISTRICTS = null; distReq = null;    // drill-down cache is per-tab
+    LIVE = false; prevBanked = {};
+    render(); setLiveText(); poll();
+  }
+  g("tabs").addEventListener("click", e => {
+    const b = e.target.closest("button[data-tab]"); if (!b) return;
+    selectTab(b.dataset.tab);
+  });
 
   // wire controls
   g("filter").addEventListener("click", e => {
